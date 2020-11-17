@@ -8,11 +8,11 @@
 #include <map>
 
 
-int compress(std::string_view filename) {
+template<typename Input>
+bool compress(Input &&in) { // r&l-value universal ref
 
   std::unordered_map<std::string, int> unsortedFrequency;
-  std::ifstream file(filename);
-  for (std::string buf; std::getline(file, buf);) {
+  for (std::string buf; std::getline(in, buf);) {
     std::istringstream line(buf);
     auto fullUrl = std::next(std::istream_iterator<std::string>(line), 9);
     auto shortUrl = std::istringstream(fullUrl->substr(0, fullUrl->find('?')));
@@ -20,7 +20,6 @@ int compress(std::string_view filename) {
       ++unsortedFrequency[term];
     }
   }
-
 
   std::multimap<int, std::string> sortedFrequency;
   std::transform(
@@ -30,7 +29,7 @@ int compress(std::string_view filename) {
     [](auto &&p) { return std::pair{std::move(p.second), p.first}; }
   );
 
-  std::unordered_map<std::string, int> terms;
+  std::map<std::string, int> terms;
   std::transform(
     sortedFrequency.cbegin(),
     sortedFrequency.cend(),
@@ -42,17 +41,27 @@ int compress(std::string_view filename) {
     std::cout << term << " -> " << id << '\n';
   }
   std::cout << std::flush;
-  return 0;
+  return true;
 }
 
-int decompress(std::string_view filename) {
+template<typename Input>
+bool decompress(Input &&in) { // r&l-value universal ref
   throw std::runtime_error("not implemented yet");
 }
 
 int main(int argc, char **argv) {
 
+  using namespace std::string_view_literals;
+
+  if (argc == 1) {
+    return compress(std::cin);
+  }
+
   if (argc == 2) {
-    return compress(argv[1]);
+    if (argv[1] == "-d"sv) {
+      return decompress(std::cin);
+    }
+    return compress(std::ifstream(argv[1]));
   }
 
   if (argc == 3 && std::string_view("-d") == argv[1]) {

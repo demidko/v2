@@ -16,20 +16,20 @@
 1. Кодируем получившиеся из каждого пути последовательности цифр с помощью variable int encoding (старший бит хранит знание, является ли байт последним в числе).
 
 ### Как собирать?
-В директории репозитория:
-```
-cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release
-```
+Нам потребуются установленные в системе `cmake` и менеджер зависимостей [`vcpkg`](https://github.com/microsoft/vcpkg).
+1. Устанавливаем парсер аргументов команданой строки:  
+`vcpkg install cxxopts`
+2. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
+```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
+3. Собираем self-executable утилиту:  
+`cmake --build cmake-build-release --target all`  
+После этого она появится директории `cmake-build-release` под именем `v2`.
 
 ### Как запускать?
-Компрессия:
-```
-./cmake-build-release/v2 filename
-```
-Декомпрессия:
-```
-./cmake-build-release/v2 -d filename
-```
+* Сжатие:   
+  `./v2 big.log` или `cat big.log | v2`
+* Декомрессия:  
+  `cat big.log | v2 -d` или`./v2 -d big.log`
 
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`
