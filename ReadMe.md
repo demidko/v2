@@ -23,13 +23,13 @@
 ```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
 3. Собираем self-executable утилиту:  
 `cmake --build cmake-build-release --target all`  
-После этого она появится директории `cmake-build-release` под именем `v2`.
+После этого она появится в директории `cmake-build-release` под именем `v2`.
 
 ### Как запускать?
-* Сжатие:   
-  `./v2 big.log` или `cat big.log | ./v2`
+* Пример сжатия:   
+  `./v2 big.log > big.log.compressed` или `cat big.log | ./v2 > big.log.compressed`
 * Декомрессия:  
-  `cat big.log | ./v2 -d` или`./v2 -d big.log`
+  `cat big.log.compressed | ./v2 -d > big.log` или`./v2 -d big.log.compressed > big.log`
 
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`
