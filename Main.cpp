@@ -32,16 +32,8 @@ void compress(std::istream &in) {
     [](auto &&p) { return std::pair{std::move(p.second), p.first}; }
   );
 
-  std::map<std::string, int> terms;
-  std::transform(
-    sortedFrequency.cbegin(),
-    sortedFrequency.cend(),
-    std::inserter(terms, terms.begin()),
-    [id = 0](auto &&p) mutable { return std::pair{std::move(p.second), ++id}; }
-  );
-
-  for (auto[term, id]: terms) {
-    std::cout << term << " -> " << id << '\n';
+  for (auto &&[k, v]: sortedFrequency) {
+    std::cout << k << " -> " << v << "\n";
   }
   std::cout << std::flush;
 }
@@ -68,12 +60,10 @@ std::function<bool(const std::vector<std::string> &)> bind(F &&handler) {
 }
 
 int main(int argc, char **argv) {
-  CLI::App v2{"Fast Farpost access logs compressor/decompressor", "v2"};
-  v2
-    .add_option("-c,--compress", bind(compress), "Compress raw log [filename]")
+  CLI::App v2("Farpost access logs compressor/decompressor", "v2");
+  v2.add_option("-c,--compress", bind(compress), "Compress raw log files [filename, ...]")
     ->expected(0, INT_MAX);
-  v2
-    .add_option("-d,--decompress", bind(decompress), "Read compressed log [filename]")
+  v2.add_option("-d,--decompress", bind(decompress), "Read compressed v2 files [filename, ...]")
     ->expected(0, INT_MAX);
   CLI11_PARSE(v2, argc, argv)
 }
