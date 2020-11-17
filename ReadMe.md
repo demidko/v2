@@ -17,7 +17,7 @@
 
 ### Как собирать?
 Нам потребуется система сборки `cmake` и менеджер библиотек [`vcpkg`](https://github.com/microsoft/vcpkg). Их легко можно установить любым пакетным менеджером, например `brew`.
-1. Устанавливаем парсер аргументов команданой строки:  
+1. Устанавливаем парсер аргументов командной строки:  
 `vcpkg install cxxopts`
 2. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
 ```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
