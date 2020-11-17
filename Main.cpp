@@ -54,7 +54,7 @@ void decompress(std::istream &in) {
 
 template<typename F>
 std::function<bool(const std::vector<std::string> &)> bind(F &&handler) {
-  return [&handler](auto &&files) -> bool {
+  return [&handler](auto &&files) {
     if (files.empty()) {
       handler(std::cin);
       return true;
@@ -68,7 +68,6 @@ std::function<bool(const std::vector<std::string> &)> bind(F &&handler) {
 }
 
 int main(int argc, char **argv) {
-
   CLI::App v2{"Fast Farpost access logs compressor/decompressor", "v2"};
   v2
     .add_option("-c,--compress", bind(compress), "Compress raw log [filename]")
