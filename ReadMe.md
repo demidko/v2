@@ -19,17 +19,14 @@
 Нам понадобится система сборки `cmake` и менеджер библиотек [`vcpkg`](https://github.com/microsoft/vcpkg). Их легко можно установить любым пакетным менеджером, например `brew`.
 1. Устанавливаем зависимость для парсинга аргументов командной строки:  
 `vcpkg install cli11`
-2. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
+1. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
 ```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
-3. Собираем self-executable утилиту:  
+1. Собираем self-executable утилиту:  
 `cmake --build cmake-build-release --target all`  
-После этого она появится в директории `cmake-build-release` под именем `v2`.
+После этого она появится в директории `cmake-build-release` под именем `v2`.  
 
 ### Как запускать?
-* Пример сжатия:   
-  `./v2 big.log > big.log.compressed` или `cat big.log | ./v2 > big.log.compressed`
-* Декомрессия:  
-  `cat big.log.compressed | ./v2 -d > big.log` или`./v2 -d big.log.compressed > big.log`
+Работает перенаправление потока ввода и опции командной строки, например `./v2 --help`
 
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`

@@ -17,14 +17,17 @@ void compress(std::istream &in) {
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
     std::istringstream line(buf);
-    auto fullUrl = std::next(std::istream_iterator<std::string>(line), 9);
-    auto shortUrl = std::istringstream(fullUrl->substr(0, fullUrl->find('?')));
-    for (std::string term; std::getline(shortUrl, term, '/');) {
-      ++unsortedFrequency[term];
+    auto urlWithParams = std::next(std::istream_iterator<std::string>(line), 9);
+    auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
+    std::istringstream urlTerms(urlOnly);
+    for (std::string term; std::getline(urlTerms, term, '/');) {
+      if (!term.empty()) {
+        ++unsortedFrequency[term];
+      }
     }
   }
 
-  std::multimap<int, std::string> sortedFrequency;
+  std::map<int, std::string> sortedFrequency;
   std::transform(
     unsortedFrequency.cbegin(),
     unsortedFrequency.cend(),
@@ -32,9 +35,11 @@ void compress(std::istream &in) {
     [](auto &&p) { return std::pair{std::move(p.second), p.first}; }
   );
 
+
   for (auto &&[k, v]: sortedFrequency) {
     std::cout << k << " -> " << v << "\n";
   }
+
   std::cout << std::flush;
 }
 
