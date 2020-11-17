@@ -6,7 +6,10 @@
 #include <iterator>
 #include <unordered_map>
 #include <map>
+#include <optional>
 #include <CLI/App.hpp>
+#include <CLI/Formatter.hpp>
+#include <CLI/Config.hpp>
 
 
 template<typename Input>
@@ -51,13 +54,17 @@ bool decompress(Input &&in) { // r&l-value universal ref
 }
 
 int main(int argc, char **argv) {
-  CLI::App v2("fast access logs compressor/decompressor", "v2");
-  cxxopts::Options options("v2", "fast log decompression");
-  options.add_options()
-    ("d,decompress", "uncompress file", cxxopts::value<std::string>())
-    ("d,decompress", "uncompress file");
-  auto params = options.parse(argc, argv);
-  for (const auto &x: params.arguments()) {
-    std::cout << x.key() << " -> " << x.value();
-  }
+  CLI::App v2{"fast access logs compressor/decompressor", "v2"};
+  v2.add_option(
+    "-d,--decompress",
+    [](const std::vector<std::string> &compressedLogFiles) {
+      std::cout << "DCALL\n";
+      for (const auto &i: compressedLogFiles) {
+        std::cout << i << std::endl;
+      }
+      return true;
+    },
+    "Read compressed log"
+  )->expected(0, INT_MAX);
+  CLI11_PARSE(v2, argc, argv);
 }
