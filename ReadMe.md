@@ -22,11 +22,14 @@ cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release
 ```
 
 ### Как запускать?
-Компрессия в stdout:
+Компрессия:
 ```
-./cmake-build-release/v2 some.log
+./cmake-build-release/v2 filename
 ```
 Декомпрессия:
+```
+./cmake-build-release/v2 -d filename
+```
 
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`
