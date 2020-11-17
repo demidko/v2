@@ -16,8 +16,8 @@
 1. Кодируем получившиеся из каждого пути последовательности цифр с помощью variable int encoding (старший бит хранит знание, является ли байт последним в числе).
 
 ### Как собирать?
-Нам потребуется система сборки `cmake` и менеджер библиотек [`vcpkg`](https://github.com/microsoft/vcpkg). Их легко можно установить любым пакетным менеджером, например `brew`.
-1. Устанавливаем парсер аргументов командной строки:  
+Нам понадобится система сборки `cmake` и менеджер библиотек [`vcpkg`](https://github.com/microsoft/vcpkg). Их легко можно установить любым пакетным менеджером, например `brew`.
+1. Устанавливаем зависимость для парсинга аргументов командной строки:  
 `vcpkg install cxxopts`
 2. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
 ```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
@@ -27,9 +27,9 @@
 
 ### Как запускать?
 * Сжатие:   
-  `./v2 big.log` или `cat big.log | v2`
+  `./v2 big.log` или `cat big.log | ./v2`
 * Декомрессия:  
-  `cat big.log | v2 -d` или`./v2 -d big.log`
+  `cat big.log | ./v2 -d` или`./v2 -d big.log`
 
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`
