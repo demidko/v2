@@ -14,12 +14,15 @@
 
 void compress(std::istream &in) {
 
+  // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
+
     std::istringstream line(buf);
     auto urlWithParams = std::next(std::istream_iterator<std::string>(line), 9);
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
     std::istringstream urlTerms(urlOnly);
+
     for (std::string term; std::getline(urlTerms, term, '/');) {
       if (!term.empty()) {
         ++unsortedFrequency[term];
@@ -27,16 +30,26 @@ void compress(std::istream &in) {
     }
   }
 
+  // Сортируем термы по возрастанию частоты
   std::map<int, std::string> sortedFrequency;
   std::transform(
     unsortedFrequency.cbegin(),
     unsortedFrequency.cend(),
     std::inserter(sortedFrequency, sortedFrequency.begin()),
-    [](auto &&p) { return std::pair{std::move(p.second), p.first}; }
+    [](auto &&p) { return std::pair(p.second, std::move(p.first)); }
   );
 
+  // Генерируем словарь: терм -> чем чаще встречается терм тем меньший порядковый id он получит
+  std::map<std::string, int> terms;
 
-  for (auto &&[k, v]: sortedFrequency) {
+  std::transform(
+    sortedFrequency.cbegin(),
+    sortedFrequency.cend(),
+    std::inserter(terms, terms.begin()),
+    [id = std::size(sortedFrequency) + 1](auto &&p) mutable { return std::pair(std::move(p.second), --id); }
+  );
+
+  for (auto &&[k, v]: terms) {
     std::cout << k << " -> " << v << "\n";
   }
 
