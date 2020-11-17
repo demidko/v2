@@ -12,8 +12,7 @@
 #include <CLI/Config.hpp>
 
 
-template<typename Input>
-void compress(Input &&in) { // r&l-value universal ref
+void compress(std::istream &in) {
 
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
@@ -47,27 +46,35 @@ void compress(Input &&in) { // r&l-value universal ref
   std::cout << std::flush;
 }
 
-template<typename Input>
-void decompress(Input &&in) { // r&l-value universal ref
+
+void decompress(std::istream &in) {
   throw std::runtime_error("not implemented yet");
 }
 
 
 template<typename F>
 std::function<bool(const std::vector<std::string> &)> bind(F &&handler) {
-  return [&handler](auto &&files) {
-    if (files.empty()) return handler(std::cin);
-    for (auto &&file: files) handler(file);
+  return [&handler](auto &&files) -> bool {
+    if (files.empty()) {
+      handler(std::cin);
+      return true;
+    }
+    for (auto &&file: files) {
+      std::ifstream stream(file);
+      handler(stream);
+    }
+    return true;
   };
 }
 
 int main(int argc, char **argv) {
+
   CLI::App v2{"Fast Farpost access logs compressor/decompressor", "v2"};
   v2
     .add_option("-c,--compress", bind(compress), "Compress raw log [filename]")
     ->expected(0, INT_MAX);
   v2
-    .add_option("-d,--decompress", onDecompress, "Read compressed log [filename]")
+    .add_option("-d,--decompress", bind(decompress), "Read compressed log [filename]")
     ->expected(0, INT_MAX);
   CLI11_PARSE(v2, argc, argv)
 }
