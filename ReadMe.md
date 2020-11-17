@@ -21,5 +21,10 @@
 cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release
 ```
 
+### Как запускать?
+```
+./cmake-build-release/v2 --help
+```
+
 ##### Логи для эксперимента: 
 `vault.bazadev.net:/data/logs/logs/nginx-frontend/`
