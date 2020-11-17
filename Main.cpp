@@ -6,7 +6,7 @@
 #include <iterator>
 #include <unordered_map>
 #include <map>
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
 
 
 template<typename Input>
@@ -51,29 +51,13 @@ bool decompress(Input &&in) { // r&l-value universal ref
 }
 
 int main(int argc, char **argv) {
-
-
-
-  using namespace std::string_view_literals;
-
-  if (argc == 1) {
-    return compress(std::cin);
+  CLI::App v2("fast access logs compressor/decompressor", "v2");
+  cxxopts::Options options("v2", "fast log decompression");
+  options.add_options()
+    ("d,decompress", "uncompress file", cxxopts::value<std::string>())
+    ("d,decompress", "uncompress file");
+  auto params = options.parse(argc, argv);
+  for (const auto &x: params.arguments()) {
+    std::cout << x.key() << " -> " << x.value();
   }
-
-  if (argc == 2) {
-    if (argv[1] == "-d"sv) {
-      return decompress(std::cin);
-    }
-    return compress(std::ifstream(argv[1]));
-  }
-
-  if (argc == 3 && std::string_view("-d") == argv[1]) {
-    return decompress(argv[2]);
-  }
-
-  std::cerr << "Invalid options. Usage:\n"
-               "  v2    [filename]      for compression\n"
-               "  v2 -d [filename]      for decompression" << std::endl;
-
-  return 1;
 }
