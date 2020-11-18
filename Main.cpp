@@ -21,9 +21,11 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
 #pragma clang diagnostic pop
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
+  std::istringstream lineParser;
   for (std::string buf; std::getline(in, buf);) {
-    std::istringstream line(buf);
-    auto urlWithParams = std::next(std::istream_iterator<std::string>(line), 23);
+    lineParser.str(buf);
+    auto urlWithParams = std::next(std::istream_iterator<std::string>(lineParser), 23);
+    lineParser.clear();
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
     urlsOut << urlOnly << '\n';
     std::istringstream urlTerms(urlOnly);
