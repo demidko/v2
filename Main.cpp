@@ -66,9 +66,10 @@ prepareUrlsAndTerms(std::istream &input) {
     urlTermsOutput << '\n';
   }
   // Сортируем термы по возрастанию частоты
-  std::multimap<unsigned long, std::reference_wrapper<std::string>> frequencyMap;
+  std::multimap<unsigned long, std::string &> frequencyMap;
   for (auto &&[term, frequency]: termsMap) {
-    frequencyMap.emplace(frequency, const_cast<std::string &>(term));
+    auto &termRef = term;
+    frequencyMap.emplace(frequency, const_cast<std::string &>(termRef));
   }
   // Заменяем частоту на идентификаторы в несортированном словаре термов
   auto identifier = std::size(termsMap) + 1ul;
