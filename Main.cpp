@@ -13,7 +13,13 @@
 #include <CLI/Formatter.hpp>
 #include <CLI/Config.hpp>
 
-
+/**
+ * Переиспользуем один и тот же объект из статической памяти,
+ * чтобы не тратить время на размещение при конструировании каждый раз.
+ * Буффер очищается при каждом запросе на переиспользование.
+ * @param str строка для парсинга
+ * @return {@see std::istringstream}
+ */
 std::istringstream &parserOf(const std::string &str) {
   static std::istringstream lineParser;
   lineParser.clear();
@@ -22,6 +28,7 @@ std::istringstream &parserOf(const std::string &str) {
 }
 
 std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   std::ofstream urlsOut(std::tmpnam(nullptr));
@@ -62,14 +69,14 @@ void compress(std::istream &in) {
 
 
   for (std::string buf; std::getline(in, buf);) {
-    std::cout << buf << std::endl;
+    std::cout << buf << "\n";
   }
   std::cout << "ALL LINES WRITED\n";
 
   std::string buf;
 
   std::getline(in, buf);
-  std::cout << buf << std::endl;
+  std::cout << buf << "\n";
 }
 
 
@@ -95,6 +102,7 @@ std::function<bool(const std::vector<std::string> &)> by(F &&handler) {
 
 int main(int argc, char **argv) {
   std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
   CLI::App v2("Farpost access logs compressor/decompressor", "v2");
   v2.add_option("-c,--compress", by(compress), "Compress raw log files [filename, ...]")
     ->expected(0, INT_MAX);
@@ -102,3 +110,5 @@ int main(int argc, char **argv) {
     ->expected(0, INT_MAX);
   CLI11_PARSE(v2, argc, argv)
 }
+
+#pragma clang diagnostic pop
