@@ -1,4 +1,3 @@
-#include <string_view>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -36,7 +35,7 @@ std::string extractWord(const std::string &text, int i) {
  * Функция парсит url из строки nginx логов
  */
 std::istringstream &parseUrlTerms(const std::string &logLine) {
-  auto request = extractWord(logLine, 23);
+  auto request = extractWord(logLine, 20);
   auto first = request.find("//");
   auto last = request.find_first_of("?\"");
   return stream(request.substr(first, last - first));
@@ -47,7 +46,6 @@ std::istringstream &parseUrlTerms(const std::string &logLine) {
  */
 std::tuple<std::filesystem::path, std::unordered_map<std::string, unsigned long>>
 prepareUrlsAndTerms(std::istream &input) {
-  std::cout << "COLLECTING" << std::endl;
   // Файл с термированными url
   auto termedUrlsFilename = std::filesystem::temp_directory_path()
     .append("v2-urls-buffer-")
@@ -57,24 +55,26 @@ prepareUrlsAndTerms(std::istream &input) {
   std::ofstream urlTermsOutput(termedUrlsFilename);
   // И генерируем словарь термов с частотой
   std::unordered_map<std::string, unsigned long> termsMap;
-  for (std::string buf; std::getline(input, buf);) {
+  u_long errors = 0;
+  for (std::string buf; std::getline(input, buf);)
     try {
-      for (auto &url = parseUrlTerms(buf);; std::getline(url, buf, '/');) {
+      for (auto &url = parseUrlTerms(buf); std::getline(url, buf, '/');) {
         if (!buf.empty()) {
           ++termsMap[buf];
           urlTermsOutput << buf << ' ';
         }
       }
       urlTermsOutput << '\n';
-    } catch (const std::out_of_range &e) {
-      // значит здесь нет пути, двигаемся дальше
     }
-  }
+    catch (const std::out_of_range &e) {
+      ++errors;
+    }
+
+  std::cout << errors << std::endl;
+
   // Сортируем термы по возрастанию частоты
-  std::multimap<unsigned long, std::reference_wrapper<std::string>> frequencyMap;
-  for (auto &&[term, frequency]: termsMap) {
-    frequencyMap.emplace(frequency, std::ref(const_cast<std::string &>(term)));
-  }
+  std::multimap<unsigned long, std::reference_wrapper<const std::basic_string<char>>> frequencyMap;
+  for (auto &&[term, frequency]: termsMap) { frequencyMap.emplace(frequency, std::ref(term)); }
   // Заменяем частоту на идентификаторы в несортированном словаре термов
   auto identifier = std::size(termsMap) + 1ul;
   for (auto &&[_, term]: frequencyMap) {
@@ -84,10 +84,10 @@ prepareUrlsAndTerms(std::istream &input) {
   return {std::move(termedUrlsFilename), std::move(termsMap)};
 }
 
-
 void compress(std::istream &rowStream) {
   auto[termsFilename, termsMap] = prepareUrlsAndTerms(rowStream);
   std::ifstream termStream(termsFilename);
+
   for (std::string buf; std::getline(termStream, buf);) {
     std::cout << buf << std::endl;
   }
@@ -106,6 +106,9 @@ std::function<bool(const std::vector<std::string> &)> inputTo(F &&handler) {
     }
     for (auto &&file: files) {
       std::ifstream stream(file);
+      if (!stream) {
+        throw std::runtime_error("file '" + file + "' not found");
+      }
       handler(stream);
     }
     return true;
@@ -113,6 +116,8 @@ std::function<bool(const std::vector<std::string> &)> inputTo(F &&handler) {
 }
 
 int main(int argc, char **argv) {
+  auto f = FreeMarket{};
+  f.enableConcurrency();
   /*std::ios::sync_with_stdio(false);
   std::cin.tie(nullptr);*/
   CLI::App v2("Farpost access logs compressor/decompressor", "v2");
@@ -122,3 +127,4 @@ int main(int argc, char **argv) {
     ->expected(0, INT_MAX);
   CLI11_PARSE(v2, argc, argv)
 }
+#pragma clang diagnostic pop
