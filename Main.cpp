@@ -6,19 +6,26 @@
 #include <iterator>
 #include <unordered_map>
 #include <map>
-#include <optional>
+#include <filesystem>
 #include <CLI/App.hpp>
+#include <tuple>
+#include <cstdlib>
 #include <CLI/Formatter.hpp>
 #include <CLI/Config.hpp>
 
 
 std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  std::ofstream urlsOut(std::tmpnam(nullptr));
+#pragma clang diagnostic pop
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
     std::istringstream line(buf);
     auto urlWithParams = std::next(std::istream_iterator<std::string>(line), 23);
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
+    urlsOut << urlOnly << '\n';
     std::istringstream urlTerms(urlOnly);
     for (std::string term; std::getline(urlTerms, term, '/');) {
       if (!term.empty()) {
@@ -26,7 +33,6 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
       }
     }
   }
-  in.seekg(0, std::ios::beg);
   // Сортируем термы по возрастанию частоты
   std::map<int, std::string> sortedFrequency;
   std::transform(
@@ -47,13 +53,17 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
 }
 
 void compress(std::istream &in) {
-  auto terms = buildTermsMap(in);
+
 
   for (std::string buf; std::getline(in, buf);) {
     std::cout << buf << std::endl;
   }
+  std::cout << "ALL LINES WRITED\n";
 
-  std::cout << std::flush;
+  std::string buf;
+
+  std::getline(in, buf);
+  std::cout << buf << std::endl;
 }
 
 
