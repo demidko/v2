@@ -13,6 +13,8 @@
 #include <CLI/Formatter.hpp>
 #include <CLI/Config.hpp>
 
+namespace fs = std::filesystem;
+
 /**
  * Переиспользуем один и тот же объект из статической памяти,
  * чтобы не тратить время на размещение при конструировании каждый раз.
@@ -28,11 +30,8 @@ std::istringstream &parserOf(const std::string &str) {
 }
 
 std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  std::ofstream urlsOut(std::tmpnam(nullptr));
-#pragma clang diagnostic pop
+  auto urlsFilename = std::tmpnam(nullptr);
+  std::ofstream urlsOut(urlsFilename);
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
@@ -66,24 +65,13 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
 }
 
 void compress(std::istream &in) {
-
-
-  for (std::string buf; std::getline(in, buf);) {
-    std::cout << buf << "\n";
-  }
-  std::cout << "ALL LINES WRITED\n";
-
-  std::string buf;
-
-  std::getline(in, buf);
-  std::cout << buf << "\n";
+  auto terms = buildTermsMap(in);
+  for (auto &&[k, v]: terms) std::cout << k << " -> " << v << "'n";
 }
-
 
 void decompress(std::istream &in) {
   throw std::runtime_error("not implemented yet");
 }
-
 
 template<typename F>
 std::function<bool(const std::vector<std::string> &)> by(F &&handler) {
@@ -110,5 +98,3 @@ int main(int argc, char **argv) {
     ->expected(0, INT_MAX);
   CLI11_PARSE(v2, argc, argv)
 }
-
-#pragma clang diagnostic pop
