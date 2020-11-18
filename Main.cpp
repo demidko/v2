@@ -13,73 +13,77 @@
 #include <CLI/Config.hpp>
 
 /**
- * Переиспользуем один и тот же объект из статической памяти,
- * чтобы не тратить время на размещение при конструировании каждый раз.
- * Буффер очищается при каждом запросе на переиспользование.
+ * Переиспользуем для парсинга строк один и тот же поток из статической памяти,
+ * чтобы не тратить время на размещение и выделение памяти при конструировании каждый раз.
  * @param text строка для парсинга
  * @return возвращаемый поток легко можно парсить по разделителям при помощи getline(stream, buf, delimeter)
  */
-std::istringstream &createParserFor(const std::string &text) {
+std::istringstream &stream(const std::string &text) {
   static std::istringstream lineParser;
   lineParser.clear();
   lineParser.str(text);
   return lineParser;
 }
 
-
-std::string extractUrlFrom(const std::string &request) {
-  auto first = request.find("//");
-  auto last = request.find_first_of("?\"");
-  return request.substr(first, last - first);
-}
-
-std::string extractWordFrom(const std::string &text, int withIndex) {
-  return *std::next(std::istream_iterator<std::string>(createParserFor(text)), withIndex);
+/**
+ * Функция извлекает слово из текста разделенного пробелами
+ */
+std::string extractWord(const std::string &text, int i) {
+  return *std::next(std::istream_iterator<std::string>(stream(text)), i);
 }
 
 /**
- * @param in поток данных из лога
- * @return поток термов + словарь с их идентификаторами по частоте
+ * Функция парсит url из строки nginx логов
  */
-std::tuple<std::ifstream, std::map<std::string, unsigned long>> prepareUrlsAndTerms(std::istream &in) {
-  auto urlsFilename = std::filesystem::temp_directory_path()
+std::istringstream &parseUrlTerms(const std::string &logLine) {
+  auto request = extractWord(logLine, 23);
+  auto first = request.find("//");
+  auto last = request.find_first_of("?\"");
+  return stream(request.substr(first, last - first));
+}
+
+/**
+ * Функция сохраняет термированные url'ы в файл и возвращает словарь сопоставляющий термы в id
+ */
+std::tuple<std::filesystem::path, std::unordered_map<std::string, unsigned long>>
+prepareUrlsAndTerms(std::istream &input) {
+  // Файл с термированными url
+  auto termedUrlsFilename = std::filesystem::temp_directory_path()
     .append("v2-urls-buffer-")
     .append(std::to_string(std::time(nullptr)))
     .append(".tmp");
-  std::unordered_map<std::string, int> unsortedFrequency;
-  std::string textBuffer;
-  for (std::ofstream urlsCollector(urlsFilename); std::getline(in, textBuffer);) {
-    auto request = *std::next(std::istream_iterator<std::string>(createParserFor(textBuffer)), 23);
-    auto url = extractUrlFrom(request);
-    urlsCollector << url << '\n';
-    for (auto &urlTerms = createParserFor(url); std::getline(urlTerms, textBuffer, '/');) {
-      if (!textBuffer.empty()) {
-        ++unsortedFrequency[textBuffer];
+  // В один проход по потоку логов заполняем файл термированными url
+  std::ofstream urlTermsOutput(termedUrlsFilename);
+  // И генерируем словарь термов с частотой
+  std::unordered_map<std::string, unsigned long> termsMap;
+  for (std::string buf; std::getline(input, buf);) {
+    for (auto &terms = parseUrlTerms(buf); std::getline(terms, buf, '/');) {
+      if (!buf.empty()) {
+        ++termsMap[buf];
+        urlTermsOutput << buf << ' ';
       }
     }
+    urlTermsOutput << '\n';
   }
   // Сортируем термы по возрастанию частоты
-  std::map<int, std::string> sortedFrequency;
-  std::transform(
-    unsortedFrequency.cbegin(),
-    unsortedFrequency.cend(),
-    std::inserter(sortedFrequency, sortedFrequency.begin()),
-    [](auto &&p) { return std::pair(p.second, std::move(p.first)); }
-  );
-  // Генерируем словарь: терм -> чем чаще встречается терм тем меньший порядковый id он получит
-  std::map<std::string, unsigned long> terms;
-  std::transform(
-    sortedFrequency.cbegin(),
-    sortedFrequency.cend(),
-    std::inserter(terms, terms.begin()),
-    [id = std::size(sortedFrequency) + 1](auto &&p) mutable { return std::pair(std::move(p.second), --id); }
-  );
-  return {std::ifstream(urlsFilename), std::move(terms)};
+  std::multimap<unsigned long, std::reference_wrapper<std::string>> frequencyMap;
+  for (auto &&[term, frequency]: termsMap) {
+    frequencyMap.emplace(frequency, const_cast<std::string &>(term));
+  }
+  // Заменяем частоту на идентификаторы в несортированном словаре термов
+  auto identifier = std::size(termsMap) + 1ul;
+  for (auto &&[_, term]: frequencyMap) { termsMap[term] = --identifier; }
+  // Перемещаем путь и словарь термов через кортеж на уровень выше
+  return {std::move(termedUrlsFilename), std::move(termsMap)};
 }
 
-void compress(std::istream &in) {
-  auto[urls, terms] = prepareUrlsAndTerms(in);
-  for (auto &&[k, v]: terms) std::cout << k << " -> " << v << "\n";
+
+void compress(std::istream &rowStream) {
+  auto[termsFilename, termsMap] = prepareUrlsAndTerms(rowStream);
+  std::ifstream termStream(termsFilename);
+  for (std::string buf; std::getline(termStream, buf);) {
+    std::cout << buf << std::endl;
+  }
 }
 
 void decompress(std::istream &in) {
