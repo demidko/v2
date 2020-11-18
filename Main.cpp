@@ -14,7 +14,7 @@
 #include <CLI/Config.hpp>
 
 
-std::istringstream &lineParser(const std::string &str) {
+std::istringstream &parserOf(const std::string &str) {
   static std::istringstream lineParser;
   lineParser.clear();
   lineParser.str(str);
@@ -29,12 +29,14 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
-    auto &line = lineParser(buf);
-    auto urlWithParams = std::next(std::istream_iterator<std::string>(
-      reinterpret_cast<std::istream_iterator<std::basic_string<char>>::istream_type &>(lineParser)), 23);
+    auto &lw2 = parserOf(buf);
+    auto urlWithParams = std::next(
+      std::istream_iterator<std::string>(lw2),
+      23
+    );
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
     urlsOut << urlOnly << '\n';
-    std::istringstream urlTerms(urlOnly);
+    auto &urlTerms = parserOf(urlOnly);
     for (std::string term; std::getline(urlTerms, term, '/');) {
       if (!term.empty()) {
         ++unsortedFrequency[term];
