@@ -29,8 +29,7 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
   for (std::string buf; std::getline(in, buf);) {
-    auto &lineWords = parserOf(buf);
-    auto urlWithParams = std::next(std::istream_iterator<std::string>(lineWords), 23);
+    auto urlWithParams = std::next(std::istream_iterator<std::string>(parserOf(buf)), 23);
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
     urlsOut << urlOnly << '\n';
     auto &urlTerms = parserOf(urlOnly);
