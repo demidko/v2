@@ -14,6 +14,13 @@
 #include <CLI/Config.hpp>
 
 
+std::istringstream &lineParser(const std::string &str) {
+  static std::istringstream lineParser;
+  lineParser.clear();
+  lineParser.str(str);
+  return lineParser;
+}
+
 std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -21,11 +28,10 @@ std::map<std::string, unsigned long> buildTermsMap(std::istream &in) {
 #pragma clang diagnostic pop
   // Сохраняем частоту термов
   std::unordered_map<std::string, int> unsortedFrequency;
-  std::istringstream lineParser;
   for (std::string buf; std::getline(in, buf);) {
-    lineParser.str(buf);
-    auto urlWithParams = std::next(std::istream_iterator<std::string>(lineParser), 23);
-    lineParser.clear();
+    auto &line = lineParser(buf);
+    auto urlWithParams = std::next(std::istream_iterator<std::string>(
+      reinterpret_cast<std::istream_iterator<std::basic_string<char>>::istream_type &>(lineParser)), 23);
     auto urlOnly = urlWithParams->substr(0, urlWithParams->find('?'));
     urlsOut << urlOnly << '\n';
     std::istringstream urlTerms(urlOnly);
