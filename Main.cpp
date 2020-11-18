@@ -47,6 +47,7 @@ std::istringstream &parseUrlTerms(const std::string &logLine) {
  */
 std::tuple<std::filesystem::path, std::unordered_map<std::string, unsigned long>>
 prepareUrlsAndTerms(std::istream &input) {
+  std::cout << "COLLECTING" << std::endl;
   // Файл с термированными url
   auto termedUrlsFilename = std::filesystem::temp_directory_path()
     .append("v2-urls-buffer-")
@@ -57,23 +58,28 @@ prepareUrlsAndTerms(std::istream &input) {
   // И генерируем словарь термов с частотой
   std::unordered_map<std::string, unsigned long> termsMap;
   for (std::string buf; std::getline(input, buf);) {
-    for (auto &terms = parseUrlTerms(buf); std::getline(terms, buf, '/');) {
-      if (!buf.empty()) {
-        ++termsMap[buf];
-        urlTermsOutput << buf << ' ';
+    try {
+      for (auto &url = parseUrlTerms(buf);; std::getline(url, buf, '/');) {
+        if (!buf.empty()) {
+          ++termsMap[buf];
+          urlTermsOutput << buf << ' ';
+        }
       }
+      urlTermsOutput << '\n';
+    } catch (const std::out_of_range &e) {
+      // значит здесь нет пути, двигаемся дальше
     }
-    urlTermsOutput << '\n';
   }
   // Сортируем термы по возрастанию частоты
-  std::multimap<unsigned long, std::string &> frequencyMap;
+  std::multimap<unsigned long, std::reference_wrapper<std::string>> frequencyMap;
   for (auto &&[term, frequency]: termsMap) {
-    auto &termRef = term;
-    frequencyMap.emplace(frequency, const_cast<std::string &>(termRef));
+    frequencyMap.emplace(frequency, std::ref(const_cast<std::string &>(term)));
   }
   // Заменяем частоту на идентификаторы в несортированном словаре термов
   auto identifier = std::size(termsMap) + 1ul;
-  for (auto &&[_, term]: frequencyMap) { termsMap[term] = --identifier; }
+  for (auto &&[_, term]: frequencyMap) {
+    termsMap[term] = --identifier;
+  }
   // Перемещаем путь и словарь термов через кортеж на уровень выше
   return {std::move(termedUrlsFilename), std::move(termsMap)};
 }
@@ -107,8 +113,8 @@ std::function<bool(const std::vector<std::string> &)> inputTo(F &&handler) {
 }
 
 int main(int argc, char **argv) {
-  std::ios::sync_with_stdio(false);
-  std::cin.tie(nullptr);
+  /*std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);*/
   CLI::App v2("Farpost access logs compressor/decompressor", "v2");
   v2.add_option("-c,--compress", inputTo(compress), "Compress raw log files [filename, ...]")
     ->expected(0, INT_MAX);
