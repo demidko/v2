@@ -4,5 +4,5 @@
 
 namespace Decompressor {
 
-  void decompress(std::istream &in);
+  void decompress(const std::string &logFilename);
 }

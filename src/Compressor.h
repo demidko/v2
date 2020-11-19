@@ -4,5 +4,5 @@
 
 namespace Compressor {
 
-  void compress(std::istream &in);
+  void compress(const std::string &logFilename);
 }
