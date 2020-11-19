@@ -45,11 +45,8 @@ buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
 
 
 void Compressor::compress(const std::string &logFilename) {
-
-
   auto orderedTermsBuffer = logFilename + ".v2.terms";
   auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
-
   std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);
   auto mapLen = termsMap.size();
   compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
