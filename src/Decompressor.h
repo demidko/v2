@@ -1,8 +1,8 @@
 #pragma once
 
-#include <istream>
+#include <string>
 
 namespace Decompressor {
 
-  void decompress(const std::string &logFilename);
+  void decompress(const std::string &v2Filename);
 }

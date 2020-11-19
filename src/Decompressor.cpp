@@ -1,5 +1,7 @@
 #include "Decompressor.h"
+#include <fstream>
 
-void Decompressor::decompress(const std::string &logFilename) {
-  throw std::runtime_error("Not implemented yet");
+void Decompressor::decompress(const std::string &v2Filename) {
+  std::ifstream v2Stream(v2Filename, std::ios::binary);
+  v2Stream.re
 }

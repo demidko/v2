@@ -1,6 +1,6 @@
 #pragma once
 
-#include <istream>
+#include <string>
 
 namespace Compressor {
 

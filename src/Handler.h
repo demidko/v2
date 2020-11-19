@@ -14,7 +14,7 @@ namespace Handler {
   template<typename Handler>
   std::function<bool(const std::vector<std::string> &)> by(Handler &&handler) {
     return [&](auto &files) {
-      for (auto &&file: files) handler(file);
+      for (auto &&file: files) { handler(file) };
       return true;
     };
   }

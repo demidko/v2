@@ -43,7 +43,6 @@ buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
   return termsMap;
 }
 
-
 void Compressor::compress(const std::string &logFilename) {
   auto orderedTermsBuffer = logFilename + ".v2.terms";
   auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
@@ -53,18 +52,19 @@ void Compressor::compress(const std::string &logFilename) {
   char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
   for (auto &&[term, id]: termsMap) {
     compressedUrls.write(&empty, 1);
-    compressedUrls.write(term.data(), termsMap.size());
-    compressedUrls.write(&empty, 1);
     compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
+    compressedUrls.write(&empty, 1);
+    compressedUrls.write(term.data(), termsMap.size());
   }
   compressedUrls.write(&empty, 1);
   std::ifstream orderedTermsStream(orderedTermsBuffer);
   for (std::string buf; std::getline(orderedTermsStream, buf);) {
     for (auto &terms = Parser::parse(buf); std::getline(terms, buf, ' ');) {
-      compressedUrls.write(buf.data(), buf.size());
-      compressedUrls.write(&empty, 1);
+      auto id = termsMap[buf];
+      compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
     }
   }
   orderedTermsStream.close(); // здесь не полагаемся на автоматический вызов деструктора т к нам еще удалять нужно
   std::filesystem::remove(orderedTermsBuffer);
+
 }
