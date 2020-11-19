@@ -4,5 +4,5 @@
 
 namespace Compressor {
 
-  void compress(std::istream &rowStream);
+  void compress(std::istream &in);
 }

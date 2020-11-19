@@ -1,10 +1,10 @@
 #include "Compressor.h"
 #include "Parser.h"
-#include <fstream>
+#include <filesystem>
 #include <iostream>
 #include <unordered_map>
 #include <map>
-#include <string>
+#include <fstream>
 #include <sstream>
 
 namespace {
@@ -14,25 +14,25 @@ namespace {
   std::tuple<std::filesystem::path, std::unordered_map<std::string, unsigned long>>
   prepareUrlsAndTerms(std::istream &input) {
     // Файл с термированными url
-    auto termedUrlsFilename = std::filesystem::temp_directory_path()
-      .append("v2-urls-buffer-")
-      .append(std::to_string(std::time(nullptr)))
-      .append(".tmp");
+    auto termedUrlsFilename =
+      std::filesystem::temp_directory_path() /
+      std::filesystem::path("v2-urls-buffer-" + std::to_string(std::time(nullptr)) + ".tmp");
     // В один проход по потоку логов заполняем файл термированными url
     std::ofstream urlTermsOutput(termedUrlsFilename);
     // И генерируем словарь термов с частотой
     std::unordered_map<std::string, unsigned long> termsMap;
-    u_long errors = 0;
     for (std::string buf; std::getline(input, buf);) {
       auto request = Parser::extract(buf, 23);
-      auto first = request.find("//");
-      auto last = request.find_first_of("?\"");
+      int first = request.find("//");
+      int last = request.find_first_of("?\"");
       if (first == -1 || last == -1) {
         // значит это не url, а что нибудь вроде "-" или "5aef8db%2FT0w16Io%2FmYOshHdtzlxGA0ab"
         // (таких значений примерно треть на 100 000 записей)
         continue;
       }
-      auto url = request.substr(first, last - first);
+      auto len = last - first;
+      auto url = request.substr(first, len);
+      std::cout << url << " (" << last << " - " << first << " = " << len << ")" << std::endl;
       for (auto &terms = Parser::parse(url); std::getline(terms, buf, '/');) {
         if (!buf.empty()) {
           ++termsMap[buf];
@@ -54,11 +54,11 @@ namespace {
   }
 }
 
-void Compressor::compress(std::istream &rowStream) {
-  auto[termsFilename, termsMap] = prepareUrlsAndTerms(rowStream);
-  std::ifstream termStream(termsFilename);
-
+void Compressor::compress(std::istream &in) {
+  auto[termsFilename, termsMap] = prepareUrlsAndTerms(in);
+  std::cout << termsFilename;
+  /*std::ifstream termStream(termsFilename);
   for (std::string buf; std::getline(termStream, buf);) {
     std::cout << buf << std::endl;
-  }
+  }*/
 }
