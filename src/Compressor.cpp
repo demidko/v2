@@ -46,22 +46,28 @@ buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
 
 void Compressor::compress(const std::string &logFilename) {
 
-  auto urlsBuffer = logFilename + ".v2.terms";
-  auto termsMap = buildTerms(logFilename, urlsBuffer);
+
+  auto orderedTermsBuffer = logFilename + ".v2.terms";
+  auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
 
   std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);
-  compressedUrls << std::size(termsMap);
+  auto mapLen = termsMap.size();
+  compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
+  char empty;
   for (auto &&[term, id]: termsMap) {
-    compressedUrls.write()
-    compressedUrls << ' ' << term.c_str() << ' ' << id;
+    compressedUrls.write(&empty, 1);
+    compressedUrls.write(term.data(), termsMap.size());
+    compressedUrls.write(&empty, 1);
+    compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
   }
-
-  /*std::ifstream termStream(urlsBuffer);
-  for (std::string buf; std::getline(termStream, buf);) {
+  compressedUrls.write(&empty, 1);
+  std::ifstream orderedTermsStream(orderedTermsBuffer);
+  for (std::string buf; std::getline(orderedTermsStream, buf);) {
     for (auto &terms = Parser::parse(buf); std::getline(terms, buf, ' ');) {
-
+      compressedUrls.write(buf.data(), buf.size());
+      compressedUrls.write(&empty, 1);
     }
-  }*/
-
-  std::filesystem::remove(urlsBuffer);
+  }
+  orderedTermsStream.close(); // здесь не полагаемся на автоматический вызов деструктора т к нам еще удалять нужно
+  std::filesystem::remove(orderedTermsBuffer);
 }

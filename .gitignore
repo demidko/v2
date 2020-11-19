@@ -1,5 +1,6 @@
 cmake-build-release
 .idea
 .DS_Store
-.log
-.v2
+*.log
+*.v2
+*.terms
