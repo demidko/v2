@@ -53,7 +53,7 @@ void Compressor::compress(const std::string &logFilename) {
   std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);
   auto mapLen = termsMap.size();
   compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
-  char empty;
+  char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
   for (auto &&[term, id]: termsMap) {
     compressedUrls.write(&empty, 1);
     compressedUrls.write(term.data(), termsMap.size());
