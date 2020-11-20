@@ -10,10 +10,13 @@
 #include <list>
 
 /**
- * Читаем n-ый бит из msb последовательности
+ * Читаем n-ый бит из msb байта
  */
 template<typename N>
-inline constexpr bool readMsb(N n, uint i) { return (n >> i) & 1u; }
+inline constexpr bool readMsb(N n, ushort i) { return (n >> i) & 1u; }
+
+template<typename N>
+inline constexpr void writeMsb(N &n, ushort i) { n |= (1u << i); }
 
 /**
  * Поток для vlq-компрессии
@@ -25,10 +28,15 @@ struct VlqOutput {
 
   inline ~VlqOutput() { output << bitset; }
 
-  inline VlqOutput &operator<<(uint64_t n) {
+  template<typename Value>
+  inline VlqOutput &operator<<(Value val) {
+    static_assert(
+      (sizeof(Value) == (sizeof(void *) * 2)),
+      "Values more than sizeof(void*) * 2 bytes must be passed by const reference"
+    );
     //  TODO: заменить на C++20 <bit> header standards
-    auto nSize = std::log2p1(n);
-    for (int i = 0, bit; bit = readMsb(n, i), i < nSize; ++i) {
+    auto valBitSize = std::log2p1(val);
+    for (int i = 0, bit; bit = readMsb(val, i), i < valBitSize; ++i) {
       if (!freeBitsetSize) {
         output << bitset;
         bitset = {};
@@ -41,7 +49,6 @@ struct VlqOutput {
   }
 
 private:
-
   constexpr static ushort totalBitsetSize = sizeof(uint64_t) * 8;
   ushort freeBitsetSize = totalBitsetSize;
   uint64_t bitset{};
@@ -49,42 +56,24 @@ private:
 };
 
 
-template<typename T>
-std::list<std::byte> toVlqBytes(T &&n) {
-  std::list<std::byte> result;
-  // переводим число в побитовое представление
-  std::bitset<sizeof(T) * 8> number(n);
-  // пропускаем не заполненные биты
-  auto i = number.size();
-  for (; i < number.size(); ++i) {
-    if (number[i] == 1) { break; };
-  }
-  // двигаемся по значимым битам
-  for (; i < number.size();) {
-    // преобразуем
-    std::bitset<8> byte;
-    byte[0] = (((number.size() - i) > 7) ? 1 : 0);
-    for (auto j = 1; j < 8 && i < number.size(); ++j, ++i) {
-      byte[j] = number[i];
-    }
-    // и выгружаем по одному байту
-    result.push_back((std::byte) byte.to_ulong());
-  }
-
-  return result;
-}
-
-
 int main(int argc, char **argv) {
 
-  for (int i = 0; false, i < 10; ++i) std::cout << i;
 
   for (std::string buf; std::getline(std::cin, buf);) {
     auto number = std::stoul(buf);
     std::cout << "bitset: " << std::bitset<sizeof(uint) * 8>(number) << std::endl;
     auto bit_width = std::log2p1(number);
-    for (int i = 0; i < bit_width; ++i) {
-      std::cout << readMsb(number, i);
+    uint res{};
+
+    uint uintbitlen = sizeof(uint) * 8u;
+    for (auto i = uintbitlen - bit_width; i < uintbitlen; ++i) {
+      writeMsb(res, readMsb(number, i));
+    }
+    std::cout << res << std::endl;
+
+    auto bit_width2 = std::log2p1(res);
+    for (int j = 0; j < bit_width; ++j) {
+      std::cout << readMsb(res, j);
     }
     std::cout << std::endl;
   }
