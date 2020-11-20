@@ -4,23 +4,18 @@
 #include "Compressor.h"
 #include "Decompressor.h"
 #include "Handler.h"
-
 #include "Vlq.h"
-#include <list>
 
 
 int main(int argc, char **argv) {
 
+  using namespace Vlq;
   for (std::string buf; std::getline(std::cin, buf);) {
     auto n = std::stoul(buf);
     std::bitset<sizeof(long) * 8> bs(n);
-
-    std::cout << "bits: " << bs.size() << std::endl;
-    std::cout << bs << std::endl;
-    for (int i = 0; i < bs.size(); ++i) {
-      std::cout << bs[i];
-    }
-    std::cout << '\n';
+    std::cout << "bits len: " << bs.size() << std::endl;
+    std::cout << "bitset: " << bs << std::endl;
+    std::cout << toVlqBytes(n) << std::endl;
   }
 
   /*using Compressor::compress;

@@ -5,20 +5,20 @@
 #include <ostream>
 
 /**
- * Инкапуслируем работу с битами здесь для любых типов
+ * Инкапуслируем работу с битами здесь для любых типов; Снаружи оперируем байтами
  */
 namespace Vlq {
 
   template<typename T>
-  struct toVlqBits {
+  struct toVlqBytes {
 
     const T value;
 
-    explicit toVlqBits(T &&n) : value(n) {}
+    explicit toVlqBytes(const T &n) : value(n) {}
   };
 
   template<typename Number>
-  std::ostream &operator<<(std::ostream &out, toVlqBits<Number> &&n) {
+  std::ostream &operator<<(std::ostream &out, toVlqBytes<Number> &&n) {
     // переводим число в побитовое представление
     std::bitset<sizeof(Number) * 8> number(n.value);
     // пропускаем не заполненные биты
