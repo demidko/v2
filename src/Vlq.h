@@ -38,5 +38,6 @@ namespace Vlq {
       auto symbol = (char) byte.to_ulong();
       out.write(&symbol, 1);
     }
+    return out;
   }
 }

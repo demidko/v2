@@ -8,13 +8,14 @@
 #include <bitset>
 #include <bit>
 
-static std::unordered_map<std::string, unsigned long>
+
+static std::unordered_map<std::string, uintmax_t>
 buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
   std::ifstream log(logFilename);
   // В один проход по потоку логов заполняем файл термированными url
   std::ofstream termedUrls(urlsBuffer);
   // И генерируем словарь термов с частотой
-  std::unordered_map<std::string, unsigned long> termsMap;
+  std::unordered_map<std::string, uintmax_t> termsMap;
   for (std::string buf; std::getline(log, buf);) {
     auto request = Parser::extract(buf, 23);
     auto first = request.find("//");
@@ -34,12 +35,12 @@ buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
     termedUrls << '\n';
   }
   // Сортируем термы по возрастанию частоты
-  std::multimap<unsigned long, std::reference_wrapper<const std::basic_string<char>>> frequencyMap;
+  std::multimap<uintmax_t, std::reference_wrapper<const std::basic_string<char>>> frequencyMap;
   for (auto &&[term, frequency]: termsMap) {
     frequencyMap.emplace(frequency, std::ref(term));
   }
   // Заменяем частоту на идентификаторы в несортированном словаре термов
-  auto identifier = std::size(termsMap) + 1ul;
+  auto identifier = std::size(termsMap) + 1u;
   for (auto &&[_, term]: frequencyMap) {
     termsMap[term] = --identifier;
   }
@@ -53,6 +54,8 @@ void Compressor::compress(const std::string &logFilename) {
   auto mapLen = termsMap.size();
   std::cout << mapLen << " unique terms found\n";
   compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
+  
+  
   char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
   std::bitset<8> bitset(5);
 
@@ -63,6 +66,7 @@ void Compressor::compress(const std::string &logFilename) {
 
     compressedUrls.write(&empty, 1);
     compressedUrls.write(term.data(), termsMap.size());
+
   }
 
   compressedUrls.write(&empty, 1);
@@ -73,6 +77,7 @@ void Compressor::compress(const std::string &logFilename) {
       compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
     }
   }
+
   orderedTermsStream.close(); // здесь не полагаемся на автоматический вызов деструктора т к нам еще удалять нужно
   std::filesystem::remove(orderedTermsBuffer);
 
