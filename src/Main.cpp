@@ -9,36 +9,45 @@
 #include <bitset>
 #include <list>
 
-template<typename Stream, typename Value> concept Output = requires(Stream s, Value v) { s << v; };
-
-template<typename Stream, typename Value> concept Input = requires(Stream s, Value v) { s >> v; };
+/**
+ * Читаем n-ый бит из msb последовательности
+ */
+template<typename N>
+inline constexpr bool readMsb(N n, uint i) { return (n >> i) & 1u; }
 
 /**
  * Поток для vlq-компрессии
  */
-template<Output<uint64_t> Ostream>
+template<typename Output = std::ostream>
 struct VlqOutput {
 
-  explicit constexpr inline VlqOutput(Ostream &o) : output(o) {}
+  explicit inline VlqOutput(Output &o) : output(o) {}
 
-  template<typename Number>
-  // TODO C++(final) concept unsigned_integral
-  VlqOutput &operator<<(Number n) {
-    auto len = std::log2p1(n);
-    // auto bits = // берем len bits
-    if (len + 1 < free) {
-      // то записываем сразу
-      output << bitset;
-      bitset = {};
+  inline ~VlqOutput() { output << bitset; }
+
+  inline VlqOutput &operator<<(uint64_t n) {
+    //  TODO: заменить на C++20 <bit> header standards
+    auto nSize = std::log2p1(n);
+    for (int i = 0, bit; bit = readMsb(n, i), i < nSize; ++i) {
+      if (!freeBitsetSize) {
+        output << bitset;
+        bitset = {};
+        freeBitsetSize = totalBitsetSize;
+      }
+      // тут запись в бит
+      --freeBitsetSize;
     }
+    return this;
   }
 
 private:
-  constexpr static ushort length = sizeof(uint64_t) * 8;
-  ushort free = length;
+
+  constexpr static ushort totalBitsetSize = sizeof(uint64_t) * 8;
+  ushort freeBitsetSize = totalBitsetSize;
   uint64_t bitset{};
-  Ostream &output;
+  Output &output;
 };
+
 
 template<typename T>
 std::list<std::byte> toVlqBytes(T &&n) {
@@ -65,19 +74,17 @@ std::list<std::byte> toVlqBytes(T &&n) {
   return result;
 }
 
-template<typename N>
-inline constexpr bool readBitR(N &&n, uint i) { return (n >> i) & 1u; }
-
 
 int main(int argc, char **argv) {
+
+  for (int i = 0; false, i < 10; ++i) std::cout << i;
 
   for (std::string buf; std::getline(std::cin, buf);) {
     auto number = std::stoul(buf);
     std::cout << "bitset: " << std::bitset<sizeof(uint) * 8>(number) << std::endl;
-    //  TODO: заменить на C++20 <bit> header standards
     auto bit_width = std::log2p1(number);
     for (int i = 0; i < bit_width; ++i) {
-      std::cout << readBitR(number, i);
+      std::cout << readMsb(number, i);
     }
     std::cout << std::endl;
   }
