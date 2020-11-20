@@ -3,5 +3,7 @@
 
 void Decompressor::decompress(const std::string &v2Filename) {
   std::ifstream v2Stream(v2Filename, std::ios::binary);
-  v2Stream.re
+  while (v2Stream) {
+
+  }
 }

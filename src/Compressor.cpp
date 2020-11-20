@@ -4,6 +4,9 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <iostream>
+#include <bitset>
+#include <bit>
 
 static std::unordered_map<std::string, unsigned long>
 buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
@@ -48,14 +51,20 @@ void Compressor::compress(const std::string &logFilename) {
   auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
   std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);
   auto mapLen = termsMap.size();
+  std::cout << mapLen << " unique terms found\n";
   compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
   char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
+  std::bitset<8> bitset(5);
+
   for (auto &&[term, id]: termsMap) {
     compressedUrls.write(&empty, 1);
+
     compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
+
     compressedUrls.write(&empty, 1);
     compressedUrls.write(term.data(), termsMap.size());
   }
+
   compressedUrls.write(&empty, 1);
   std::ifstream orderedTermsStream(orderedTermsBuffer);
   for (std::string buf; std::getline(orderedTermsStream, buf);) {
