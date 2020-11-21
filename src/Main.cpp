@@ -4,7 +4,7 @@
 #include "Compressor.h"
 #include "Decompressor.h"
 #include "Handler.h"
-
+#include "BitOperations.h"
 #include <bit>
 #include <bitset>
 #include <list>
@@ -12,11 +12,7 @@
 /**
  * Читаем n-ый бит из msb байта
  */
-template<typename N>
-inline constexpr bool readMsb(N n, ushort i) { return (n >> i) & 1u; }
-
-template<typename N>
-inline constexpr void writeMsb(N &n, ushort i) { n |= (1u << i); }
+inline constexpr bool readMsb(uint64_t n, uint16_t i) { return (n >> i) & 1u; }
 
 /**
  * Поток для vlq-компрессии
@@ -35,7 +31,7 @@ struct VlqOutput {
       "Values more than sizeof(void*) * 2 bytes must be passed by const reference"
     );
     //  TODO: заменить на C++20 <bit> header standards
-    auto valBitSize = std::log2p1(val);
+    auto valBitSize = std::bit_width(val);
     for (int i = 0, bit; bit = readMsb(val, i), i < valBitSize; ++i) {
       if (!freeBitsetSize) {
         output << bitset;
@@ -55,24 +51,25 @@ private:
   Output &output;
 };
 
-
 int main(int argc, char **argv) {
-
 
   for (std::string buf; std::getline(std::cin, buf);) {
     auto number = std::stoul(buf);
+
     std::cout << "bitset: " << std::bitset<sizeof(uint) * 8>(number) << std::endl;
-    auto bit_width = std::log2p1(number);
+    auto bit_width = std::bit_width(number);
+
     uint res{};
 
-    uint uintbitlen = sizeof(uint) * 8u;
-    for (auto i = uintbitlen - bit_width; i < uintbitlen; ++i) {
-      writeMsb(res, readMsb(number, i));
+    for (auto i = 0; i < bit_width; ++i) {
+      if (readMsb(number, i)) {
+
+      }
     }
     std::cout << res << std::endl;
 
     auto bit_width2 = std::log2p1(res);
-    for (int j = 0; j < bit_width; ++j) {
+    for (int j = 0; j < bit_width2; ++j) {
       std::cout << readMsb(res, j);
     }
     std::cout << std::endl;

@@ -1,5 +1,7 @@
 #include "Parser.h"
 #include <sstream>
+#include <iterator>
+
 
 std::istringstream &Parser::parse(const std::string &text) {
   static std::istringstream lineParser;
