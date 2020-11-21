@@ -51,9 +51,9 @@ namespace Bit {
    * Обходим все биты в MSB-first порядке.
    */
   template<typename N, typename F>
-  void ForEach(N number, F &&f) {
-    for (uint16_t i = 0, l = std::bit_width(number), b; b = Bit::Get(number, i), i < l; ++i) {
-      f(b);
+  void ForEach(N number, F &&func) {
+    for (uint16_t i = 0, len = std::bit_width(number), bit; bit = Get(number, i), i < len; ++i) {
+      func(bit);
     }
   }
 }

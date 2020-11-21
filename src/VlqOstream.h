@@ -14,9 +14,11 @@ struct VlqOstream {
 
   template<typename N>
   inline VlqOstream &operator<<(N number) {
-    Bit::ForEach(number, [this](bool bit) {
-      if (index == limit) {
-        flush();
+    Bit::ForEach(number, [this](auto bit) {
+      if (index == 64) {
+        ostream << buffer;
+        buffer = {};
+        index = {};
       }
       if (bit) {
         Bit::Set(buffer, index);
@@ -27,16 +29,7 @@ struct VlqOstream {
   }
 
 private:
-
-  inline void flush() {
-    ostream << buffer;
-    buffer = {};
-    index = {};
-  }
-
-  constexpr static uint16_t limit{64};
   uint16_t index{};
   uint64_t buffer{};
-
   Ostream &ostream;
 };
