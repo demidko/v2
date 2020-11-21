@@ -1,5 +1,7 @@
 #pragma once
-
+/**
+ * В этом наблоне мы инкапсулируем низкоуровневые побитовые операции.
+ */
 #include <bit>
 /**
  * Для работы нам нужны низкоуровневые побитовые операции стандарта C++20,
@@ -31,3 +33,15 @@ namespace std {
 
 }
 #endif
+
+/**
+ * Читаем i-ый бит из n. Используется MSB-first порядок.
+ */
+template<typename N>
+inline constexpr bool getBit(N n, uint16_t i) { return (n >> i) & 1u; }
+
+/**
+ * Записываем i-ый бит в n. Используется MSB-first порядок.
+ */
+template<typename N>
+inline constexpr void setBit(N &n, uint16_t i) { n |= (1u << i); }

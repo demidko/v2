@@ -4,15 +4,11 @@
 #include "Compressor.h"
 #include "Decompressor.h"
 #include "Handler.h"
-#include "Bit.h"
+#include "Bit.hpp"
 #include <bit>
 #include <bitset>
 #include <list>
 
-/**
- * Читаем n-ый бит из msb байта
- */
-inline constexpr bool readMsb(uint64_t n, uint16_t i) { return (n >> i) & 1u; }
 
 
 /**
@@ -33,7 +29,7 @@ struct VlqOutput {
     );
     //  TODO: заменить на C++20 <bit> header standards
     auto valBitSize = std::bit_width(val);
-    for (int i = 0, bit; bit = readMsb(val, i), i < valBitSize; ++i) {
+    for (int i = 0, bit; bit = getBit(val, i), i < valBitSize; ++i) {
       if (!freeBitsetSize) {
         output << bitset;
         bitset = {};
@@ -53,9 +49,6 @@ private:
 };
 
 
-void set_bit(uint64_t &num, uint16_t position) {
-  num |= (1u << position);
-}
 
 int main(int argc, char **argv) {
 
@@ -68,15 +61,15 @@ int main(int argc, char **argv) {
     uint64_t res{};
 
     for (auto i = 0; i < bit_width; ++i) {
-      if (readMsb(number, i)) {
-        set_bit(res, i);
+      if (getBit(number, i)) {
+        setBit(res, i);
       }
     }
     std::cout << res << std::endl;
     if (res != number) {
       auto bit_width2 = std::bit_width(res);
       for (int j = 0; j < bit_width2; ++j) {
-        std::cout << readMsb(res, j);
+        std::cout << getBit(res, j);
       }
       std::cout << std::endl;
     }
