@@ -46,14 +46,4 @@ namespace Bit {
    */
   template<typename N>
   inline constexpr void Set(N &n, uint16_t i) { n |= (1u << i); }
-
-  /**
-   * Обходим все биты в MSB-first порядке.
-   */
-  template<typename N, typename F>
-  void ForEach(N number, F &&func) {
-    for (uint16_t i = 0, len = std::bit_width(number), bit; bit = Get(number, i), i < len; ++i) {
-      func(bit);
-    }
-  }
 }
