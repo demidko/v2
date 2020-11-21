@@ -7,10 +7,11 @@
 #include <iostream>
 #include <bitset>
 #include <bit>
+#include <filesystem>
 
 
 static std::unordered_map<std::string, uintmax_t>
-buildTerms(std::string_view logFilename, std::string_view urlsBuffer) {
+buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
   std::ifstream log(logFilename);
   // В один проход по потоку логов заполняем файл термированными url
   std::ofstream termedUrls(urlsBuffer);
@@ -54,8 +55,8 @@ void Compressor::compress(const std::string &logFilename) {
   auto mapLen = termsMap.size();
   std::cout << mapLen << " unique terms found\n";
   compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
-  
-  
+
+
   char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
   std::bitset<8> bitset(5);
 
