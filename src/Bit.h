@@ -1,6 +1,6 @@
 #pragma once
 /**
- * В этом наблоне мы инкапсулируем низкоуровневые побитовые операции.
+ * Самописная библиотека для работы с битами. Используется MSB-fisrt порядок.
  */
 #include <bit>
 /**
@@ -34,14 +34,26 @@ namespace std {
 }
 #endif
 
-/**
- * Читаем i-ый бит из n. Используется MSB-first порядок.
- */
-template<typename N>
-inline constexpr bool getBit(N n, uint16_t i) { return (n >> i) & 1u; }
+namespace Bit {
+  /**
+   * Читаем i-ый бит из n. Используется MSB-first порядок.
+   */
+  template<typename N>
+  inline constexpr bool Get(N n, uint16_t i) { return (n >> i) & 1u; }
 
-/**
- * Записываем i-ый бит в n. Используется MSB-first порядок.
- */
-template<typename N>
-inline constexpr void setBit(N &n, uint16_t i) { n |= (1u << i); }
+  /**
+   * Записываем i-ый бит в n. Используется MSB-first порядок.
+   */
+  template<typename N>
+  inline constexpr void Set(N &n, uint16_t i) { n |= (1u << i); }
+
+  /**
+   * Обходим все биты в MSB-first порядке.
+   */
+  template<typename N, typename F>
+  void ForEach(N number, F &&f) {
+    for (uint16_t i = 0, l = std::bit_width(number), b; b = Bit::Get(number, i), i < l; ++i) {
+      f(b);
+    }
+  }
+}
