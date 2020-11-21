@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(v2)
 
-#[[без C++20 у нас не будет легкой поддержки концептов и оптимизированных "из коробки" побитовых операций]]
+#[[без C++20 у нас не будет <bit>]]
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

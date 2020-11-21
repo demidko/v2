@@ -21,11 +21,13 @@
  * приводим на этапе компиляции имена из libc++ в соответствие стандарту,
  * определяя для них подстановку внутри стандартного пространства имён.
  */
-namespace std {
 #ifdef __llvm__
+namespace std {
+
 #define bit_width log2p1
 #define bit_floor floor2
 #define bit_ceil ceil2
 #define has_single_bit ispow2
-#endif
+
 }
+#endif

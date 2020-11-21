@@ -4,7 +4,7 @@
 #include "Compressor.h"
 #include "Decompressor.h"
 #include "Handler.h"
-#include "BitOperations.h"
+#include "Bit.h"
 #include <bit>
 #include <bitset>
 #include <list>
@@ -13,6 +13,7 @@
  * Читаем n-ый бит из msb байта
  */
 inline constexpr bool readMsb(uint64_t n, uint16_t i) { return (n >> i) & 1u; }
+
 
 /**
  * Поток для vlq-компрессии
@@ -45,34 +46,40 @@ struct VlqOutput {
   }
 
 private:
-  constexpr static ushort totalBitsetSize = sizeof(uint64_t) * 8;
-  ushort freeBitsetSize = totalBitsetSize;
+  constexpr static uint16_t totalBitsetSize = sizeof(uint64_t) * 8;
+  uint16_t freeBitsetSize = totalBitsetSize;
   uint64_t bitset{};
   Output &output;
 };
 
+
+void set_bit(uint64_t &num, uint16_t position) {
+  num |= (1u << position);
+}
+
 int main(int argc, char **argv) {
 
   for (std::string buf; std::getline(std::cin, buf);) {
+
     auto number = std::stoul(buf);
+    std::cout << "bitset: " << std::bitset<sizeof(uint16_t) * 8>(number) << std::endl;
 
-    std::cout << "bitset: " << std::bitset<sizeof(uint) * 8>(number) << std::endl;
     auto bit_width = std::bit_width(number);
-
-    uint res{};
+    uint64_t res{};
 
     for (auto i = 0; i < bit_width; ++i) {
       if (readMsb(number, i)) {
-
+        set_bit(res, i);
       }
     }
     std::cout << res << std::endl;
-
-    auto bit_width2 = std::log2p1(res);
-    for (int j = 0; j < bit_width2; ++j) {
-      std::cout << readMsb(res, j);
+    if (res != number) {
+      auto bit_width2 = std::bit_width(res);
+      for (int j = 0; j < bit_width2; ++j) {
+        std::cout << readMsb(res, j);
+      }
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
 
 
