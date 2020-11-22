@@ -19,15 +19,19 @@ VlqIstream &VlqIstream::operator>>(uint64_t &n) {
 }
 
 bool VlqIstream::readBit() {
-  if (index == 64) {
-    loadBuffer();
+  if (index == limit) {
+    if (istream) {
+      loadBuffer();
+      return readBit();
+    }
+    return 0;
   }
   return Bit::get(buffer, index++);
 }
 
 void VlqIstream::loadBuffer() {
   buffer = {};
-  istream.read(reinterpret_cast<char *>(&buffer), sizeof(buffer));
+  limit = 8 * istream.readsome(reinterpret_cast<char *>(&buffer), sizeof(buffer));
   index = {};
 }
 

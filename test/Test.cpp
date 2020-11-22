@@ -24,7 +24,7 @@ TEST_CASE("Bit operations should works correctly") {
 TEST_CASE("Vlq compression should works correctly") {
 
   // TODO: генерировать их
-  std::vector sourceNumbers{5};
+  std::vector sourceNumbers{123456};
   auto filename = "test.bin";
 
   {

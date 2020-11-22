@@ -15,7 +15,8 @@ private:
   void loadBuffer();
 
   std::istream &istream;
-  uint64_t buffer{};
-  uint8_t index{};
+  uint64_t buffer;
+  uint8_t index;
+  uint8_t limit;
 };
 
