@@ -12,12 +12,13 @@ target_link_libraries(v2 PRIVATE CLI11::CLI11)
 
 #[[Создаем тестовый проект]]
 project(v2test)
+find_package(Catch2 CONFIG REQUIRED)
 #[[Подменяем для тестов точку входа]]
 list(FILTER src EXCLUDE REGEX ".*Main.cpp$")
 file(GLOB test test/*.cpp)
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 add_executable(v2test ${src} ${test})
 #[[Добавляем зависимости для тестирования]]
-target_link_libraries(v2test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+target_link_libraries(v2test PRIVATE Catch2::Catch2)
+
 
 

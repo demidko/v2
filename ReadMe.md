@@ -18,15 +18,15 @@
 ### Как собирать?
 Нам понадобится система сборки `cmake` и менеджер библиотек [`vcpkg`](https://github.com/microsoft/vcpkg). Их легко можно установить любым пакетным менеджером, например `brew`.
 1. Устанавливаем фреймворк для тестирования:  
-`vcpkg install boost-test`
+`vcpkg install catch2`
 1. Устанавливаем зависимость для парсинга аргументов командной строки:  
 `vcpkg install cli11`
 1. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
 ```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
-1. Собираем self-executable утилиты:  
+1. Собираем проект и тесты:  
 `cmake --build cmake-build-release --target all`  
 После этого в директории `cmake-build-release` основная self-executable утилита появится под именем `v2`.  
-Исполняемые self-executable тесты для неё будут расположены рядом под именем `v2test`.
+Тесты можно выполнить запустив расположенный рядом файл `v2test`.  
 
 ### Как запускать?
 Работают опции командной строки, например `./v2 --help`
