@@ -17,29 +17,27 @@ struct VlqOstream {
     // количество минимально необходимых для кодирования числа бит (брать по MSB-first)
     auto len = std::bit_width(number);
     // количество полных 7 битных октетов в числе
-    auto octets = std::ceil(len / 7.) - 1;
-    // количество бит в последнем октете (<= 7)
-    auto rest = len - (octets * 7);
+    auto octets = std::ceil(len / 7.);
 
-    for ()
-
-      uint16_t i = 0;
-    for (uint16_t j = 0; j < octets; ++j) {
-      write(1);
-      for (auto limit = i + 7; i < limit; ++i) { write(Bit::Get(number, i)); }
+    for (auto octets = std::ceil(len / 7.); octets > 0; --octets) {
+      encodeOctet(number,)
     }
-    write(0);
-
-
   }
 
 private:
 
+  /**
+   * Кодирует октет
+   * @param number число
+   * @param i текущий индекс бита
+   * @param bitWidth минимально необходимое кол-во бит для кодирования числа
+   * @return i новый индекс бита
+   */
   template<typename N>
-  inline void encodeOctet(N number, uint16_t i, uint16_t bitWidth, bool isFull) {
+  inline uint16_t encodeOctet(N number, uint16_t i, uint16_t bitWidth) {
     // 1 маркирует полный 7 битный октет
     // 0 маркирует последний, возможно менее чем 7 битный октет
-    write(isFull);
+    write((bitWidth - i) > 7);
     for (uint16_t limit = i + 7; i < limit; ++i) {
       // явно заполняем нулями все что выходит за количество кодирующих бит
       // поскольку несмотря на то что там и так в большинстве случаев будут нули
@@ -48,6 +46,7 @@ private:
       // в последний октет
       write((i >= bitWidth) ? 0 : Bit::Get(number, i));
     }
+    return i;
   }
 
   inline void write(bool bit) {
