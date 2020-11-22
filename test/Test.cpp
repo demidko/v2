@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <iostream>
 #include <Bit.h>
+#include <bitset>
 
 TEST_CASE("Bit operations should works correctly") {
 
@@ -24,7 +25,7 @@ TEST_CASE("Bit operations should works correctly") {
 TEST_CASE("Vlq compression should works correctly") {
 
   // TODO: генерировать их
-  std::vector sourceNumbers{123456};
+  std::vector sourceNumbers{475'187'001};
   auto filename = "test.bin";
 
   {
@@ -39,7 +40,7 @@ TEST_CASE("Vlq compression should works correctly") {
     uint64_t n;
     for (auto &&x: sourceNumbers) {
       istream >> n;
-      std::cout << n << std::endl;
+      std::cout << "restored: " << n << std::endl;
     }
   }
 
