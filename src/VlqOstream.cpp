@@ -1,20 +1,20 @@
 #include "VlqOstream.h"
+#include "Bit.h"
 
 VlqOstream::VlqOstream(std::ostream &o) : ostream(o) {}
 
 VlqOstream::~VlqOstream() { flush(); }
 
 VlqOstream &VlqOstream::operator<<(uint64_t number) {
-  for (uint16_t i = 0, bitWidth = std::bit_width(number); i < bitWidth;) {
+  for (uint8_t i = 0, bitWidth = std::bit_width(number); i < bitWidth;) {
     // 1 маркирует полный 7 битный октет
     // 0 маркирует последний, возможно менее чем 7 битный октет
     write((bitWidth - i) > 7);
-    for (uint16_t limit = i + 7; i < limit; ++i) {
+    for (uint8_t limit = i + 7; i < limit; ++i) {
       // явно заполняем нулями все что выходит за количество кодирующих бит в последнем октете
       // поскольку несмотря на то что там и так в большинстве случаев будут нули
       // все же не исключен случай когда bit_width(n) == sizeof(n) * 8
-      // при котором мы рискуем записать после кодирующих бит пару лишних едениц
-      // в последний октет
+      // при котором мы рискуем записать после кодирующих бит пару лишних едениц в последний октет
       write((i >= bitWidth) ? 0 : Bit::Get(number, i));
     }
   }

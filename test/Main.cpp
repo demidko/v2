@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 
-#include "../src/VlqOstream.h"
+#include <VlqOstream.h>
 #include <catch.hpp>
 #include <filesystem>
 #include <list>
@@ -15,21 +15,20 @@ struct VlqBinaryNumber {
       if (Bit::Get(octet, j)) {
         std::cout << 1;
         Bit::Set(buf, i);
-      }
-      std::cout << 0;
+      } else std::cout << 0;
     }
-    std::cout << '\n';
+    std::cout << std::endl;
     return *this;
   }
 
 private:
   uint64_t buf{};
-  uint8_t i = 0;
+  uint16_t i = 0;
 };
 
 inline uint8_t readOctet(std::istream &vlq) {
   uint8_t octet{};
-  vlq.read(reinterpret_cast<char *>(&octet), sizeof(octet));
+  vlq.read(reinterpret_cast<char *>(&octet), 1);
   return octet;
 }
 
@@ -60,7 +59,6 @@ TEST_CASE("Vlq compression works correctly") {
     for (auto expected : sourceNumbers) {
       VlqBinaryNumber actual;
       istream >> actual;
-      // std::cout << actual << std::endl;
       // REQUIRE(actual == expected);
     }
   }

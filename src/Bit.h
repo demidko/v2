@@ -4,6 +4,7 @@
  */
 #include <bit>
 #include <cstdint>
+
 /**
  * Для работы нам нужны низкоуровневые побитовые операции стандарта C++20,
  * определенные в файле <bit>: https://en.cppreference.com/w/cpp/header/bit
@@ -26,12 +27,10 @@
  */
 #ifdef __llvm__
 namespace std {
-
 #define bit_width log2p1
 #define bit_floor floor2
 #define bit_ceil ceil2
 #define has_single_bit ispow2
-
 }
 #endif
 
@@ -40,11 +39,11 @@ namespace Bit {
    * Читаем i-ый бит из n. Используется MSB-first порядок.
    */
   template<typename N>
-  inline constexpr bool Get(N n, uint16_t i) { return (n >> i) & 1u; }
+  inline constexpr bool Get(N n, uint8_t i) { return (n >> i) & 1u; }
 
   /**
    * Записываем i-ый бит в n. Используется MSB-first порядок.
    */
   template<typename N>
-  inline constexpr void Set(N &n, uint16_t i) { n |= (1u << i); }
+  inline constexpr void Set(N &n, uint8_t i) { n |= (1u << i); }
 }

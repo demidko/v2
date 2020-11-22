@@ -1,21 +1,13 @@
 #pragma once
 
-#include "Bit.h"
 #include <ostream>
 
-/**
- * Поток для vlq-компрессии
- */
 struct VlqOstream {
 
   explicit VlqOstream(std::ostream &o);
 
-  ~VlqOstream();
+  virtual ~VlqOstream();
 
-  /**
-   * Кодирует бит по 7 битным vlq октетам
-   * @param number примитив-число не больше 64 бит
-   */
   VlqOstream &operator<<(uint64_t number);
 
 private:

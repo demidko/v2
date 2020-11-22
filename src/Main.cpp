@@ -10,19 +10,10 @@
 #include <list>
 #include "VlqOstream.h"
 
-void doAny() {
-  std::cout << 1;
-}
 
 int main(int argc, char **argv) {
 
-  for (int i = 0; doAny(), i < 10; ++i) {
-
-  }
-
-
-
-  /*using Compressor::compress;
+  using Compressor::compress;
   using Decompressor::decompress;
   using Handler::by;
 
@@ -32,10 +23,10 @@ int main(int argc, char **argv) {
   CLI::App v2("Farpost access logs compressor/decompressor", "v2");
 
   v2.add_option("-c,--compress", by(compress), "Compress raw *.log files [filename, ...] to *.v2")
-    ->expected(1, INT_MAX);
+    ->expected(1, INT32_MAX);
 
   v2.add_option("-d,--decompress", by(decompress), "Read compressed *.v2 files [filename, ...] to *.log")
-    ->expected(1, INT_MAX);
+    ->expected(1, INT32_MAX);
 
-  CLI11_PARSE(v2, argc, argv)*/
+  CLI11_PARSE(v2, argc, argv)
 }
