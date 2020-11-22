@@ -32,7 +32,7 @@ private:
 
   inline void write(bool bit) {
     if (index == 64) {
-      ostream << buffer;
+      ostream.write(reinterpret_cast<const char *>(&buffer), sizeof(buffer));
       buffer = {};
       index = {};
     }
