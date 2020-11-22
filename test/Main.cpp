@@ -1,6 +1,4 @@
-//
-// Created by Admin on 11/22/20.
-//
+#include "../src/VlqOstream.h"
 
 int main() {
 

@@ -14,10 +14,10 @@ target_link_libraries(v2 PRIVATE CLI11::CLI11)
 project(v2test)
 #[[Подменяем для тестов точку входа]]
 list(FILTER src EXCLUDE REGEX ".*Main.cpp$")
-#[[Добавляем в тестовый проект все исходники основного + исходники тестов]]
 file(GLOB test test/*.cpp)
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 add_executable(v2test ${src} ${test})
 #[[Добавляем зависимости для тестирования]]
-find_package(GTest CONFIG REQUIRED)
-target_link_libraries(v2test PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
+target_link_libraries(v2test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
 
