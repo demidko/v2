@@ -39,11 +39,11 @@ namespace Bit {
    * Читаем i-ый бит из n. Используется MSB-first порядок.
    */
   template<typename N>
-  inline constexpr bool Get(N n, uint8_t i) { return (n >> i) & 1u; }
+  inline constexpr bool get(N n, uint8_t i) { return (n >> i) & 1u; }
 
   /**
    * Записываем i-ый бит в n. Используется MSB-first порядок.
    */
   template<typename N>
-  inline constexpr void Set(N &n, uint8_t i) { n |= (1u << i); }
+  inline constexpr void set(N &n, uint8_t i) { n |= (1u << i); }
 }

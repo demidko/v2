@@ -3,19 +3,29 @@
 #include <CLI/Config.hpp>
 #include "Compressor.h"
 #include "Decompressor.h"
-#include "Handler.h"
 #include "Bit.h"
 #include <bit>
 #include <bitset>
 #include <list>
 #include "VlqOstream.h"
 
+/**
+   * Функция прокидывает набор файлов по очереди до обработчика
+   * @param handler обработчик файла
+   * @return обработчик файлов
+   */
+template<typename Handler>
+std::function<bool(const std::vector<std::string> &)> by(Handler &&handler) {
+  return [&](auto &files) {
+    for (auto &&file: files) { handler(file); };
+    return true;
+  };
+}
 
 int main(int argc, char **argv) {
 
   using Compressor::compress;
   using Decompressor::decompress;
-  using Handler::by;
 
   std::ios::sync_with_stdio(false);
   std::cin.tie(nullptr);

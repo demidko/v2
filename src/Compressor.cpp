@@ -1,5 +1,4 @@
 #include "Compressor.h"
-#include "Parser.h"
 #include <unordered_map>
 #include <map>
 #include <fstream>
@@ -8,7 +7,18 @@
 #include <bitset>
 #include <bit>
 #include <filesystem>
+#include <iterator>
 
+std::istringstream &parse(const std::string &text) {
+  static std::istringstream lineParser;
+  lineParser.clear();
+  lineParser.str(text);
+  return lineParser;
+}
+
+std::string extract(const std::string &fromText, int wordAtIndex) {
+  return *std::next(std::istream_iterator<std::string>(parse(fromText)), wordAtIndex);
+}
 
 static std::unordered_map<std::string, uintmax_t>
 buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
@@ -18,7 +28,7 @@ buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
   // И генерируем словарь термов с частотой
   std::unordered_map<std::string, uintmax_t> termsMap;
   for (std::string buf; std::getline(log, buf);) {
-    auto request = Parser::extract(buf, 23);
+    auto request = extract(buf, 23);
     auto first = request.find("//");
     auto last = request.find_first_of("?\"", first);
     if (first == -1 || last == -1) {
@@ -27,7 +37,7 @@ buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
       continue;
     }
     auto url = request.substr(first + 2, last - first - 2);
-    for (auto &terms = Parser::parse(url); std::getline(terms, buf, '/');) {
+    for (auto &terms = parse(url); std::getline(terms, buf, '/');) {
       if (!buf.empty()) {
         ++termsMap[buf];
         termedUrls << buf << ' ';
@@ -73,7 +83,7 @@ void Compressor::compress(const std::string &logFilename) {
   compressedUrls.write(&empty, 1);
   std::ifstream orderedTermsStream(orderedTermsBuffer);
   for (std::string buf; std::getline(orderedTermsStream, buf);) {
-    for (auto &terms = Parser::parse(buf); std::getline(terms, buf, ' ');) {
+    for (auto &terms = parse(buf); std::getline(terms, buf, ' ');) {
       auto id = termsMap[buf];
       compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
     }

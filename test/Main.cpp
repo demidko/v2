@@ -1,67 +1,25 @@
 #define CATCH_CONFIG_MAIN
 
-#include <VlqOstream.h>
 #include <catch.hpp>
+#include <VlqOstream.h>
+#include <VlqIstream.h>
 #include <filesystem>
-#include <list>
 #include <iostream>
 
-struct VlqBinaryNumber {
+TEST_CASE("Vlq compression should works correctly") {
 
-  inline operator const uint64_t &() const { return buf; } // NOLINT(google-explicit-constructor)
+  auto x = 0u;
+  REQUIRE(std::bit_width(x) == 0);
 
-  VlqBinaryNumber &operator+=(uint8_t octet) {
-    for (uint8_t j = 1; j < 8; ++j, ++i) {
-      if (Bit::Get(octet, j)) {
-        std::cout << 1;
-        Bit::Set(buf, i);
-      } else std::cout << 0;
-    }
-    std::cout << std::endl;
-    return *this;
-  }
-
-private:
-  uint64_t buf{};
-  uint16_t i = 0;
-};
-
-inline uint8_t readOctet(std::istream &vlq) {
-  uint8_t octet{};
-  vlq.read(reinterpret_cast<char *>(&octet), 1);
-  return octet;
-}
-
-inline std::istream &operator>>(std::istream &vlq, VlqBinaryNumber &n) {
-  for (uint8_t octet = readOctet(vlq);
-       n += octet, Bit::Get(octet, 0);
-       octet = readOctet(vlq)
-    );
-  return vlq;
-}
-
-TEST_CASE("Vlq compression works correctly") {
-
-  std::vector sourceNumbers = {3, 12, 1012, 475, 9, 14, 2000, 10267};
-
-  std::filesystem::path binaryFile("test.bin");
+  // TODO: генерировать их
+  std::vector sourceNumbers{1, 57, 0, 678, 10450, 2, 17, 4567, 2, 10132431, 0, 0, 3, 2221, 3};
+  auto filename = "test.bin";
 
   {
-    std::ofstream ostream(binaryFile, std::ios::binary);
-    VlqOstream vlq(ostream);
-    for (auto &&x: sourceNumbers) {
-      vlq << x;
-    }
+    std::ofstream file(filename);
+    VlqOstream ostream(file);
+
   }
 
-  {
-    std::ifstream istream(binaryFile, std::ios::binary);
-    for (auto expected : sourceNumbers) {
-      VlqBinaryNumber actual;
-      istream >> actual;
-      // REQUIRE(actual == expected);
-    }
-  }
-
-  std::filesystem::remove(binaryFile);
+  std::filesystem::remove(filename);
 }

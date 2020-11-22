@@ -8,7 +8,7 @@ project(v2)
 #[[Добавляем в сборку исходники]]
 file(GLOB sources src/*.cpp)
 add_executable(v2 ${sources})
-#[[Указываем компилятору путь поиска h файлов]]
+#[[Указываем компилятору путь поиска своих h файлов]]
 include_directories(src)
 #[[Берем у vcpkg зависимость для парсинга аргументов командной строки]]
 find_package(CLI11 CONFIG REQUIRED)
@@ -21,8 +21,6 @@ list(FILTER sources EXCLUDE REGEX ".*Main.cpp$")
 #[[Добавляем исходники тестов]]
 file(GLOB testSources test/*.cpp)
 add_executable(test ${sources} ${testSources})
-#[[Указываем компилятору путь поиска h файлов]]
-include_directories(test)
 #[[Берём у vcpkg библиотеку для тестирования]]
 find_package(Catch2 CONFIG REQUIRED)
 target_link_libraries(test PRIVATE Catch2::Catch2)

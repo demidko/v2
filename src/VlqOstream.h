@@ -4,14 +4,14 @@
 
 struct VlqOstream {
 
-  explicit VlqOstream(std::ostream &o);
+  explicit VlqOstream(std::ostream &);
 
   virtual ~VlqOstream();
 
-  VlqOstream &operator<<(uint64_t number);
+  VlqOstream &operator<<(uint64_t);
 
 private:
-  void write(bool bit);
+  void write(bool);
 
   void flush();
 
