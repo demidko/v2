@@ -12,6 +12,8 @@ private:
 
   bool readBit();
 
+  void loadBuffer();
+
   std::istream &istream;
   uint64_t buffer{};
   uint8_t index{};

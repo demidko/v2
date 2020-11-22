@@ -1,4 +1,4 @@
-#include "Compressor.h"
+#include "NginxLog.h"
 #include <unordered_map>
 #include <map>
 #include <fstream>
@@ -58,7 +58,7 @@ buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
   return termsMap;
 }
 
-void Compressor::compress(const std::string &logFilename) {
+void NginxLog::compress(const std::string &logFilename) {
   auto orderedTermsBuffer = logFilename + ".v2.terms";
   auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
   std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);

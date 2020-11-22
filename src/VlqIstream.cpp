@@ -1,7 +1,7 @@
 #include <VlqIstream.h>
 #include <Bit.h>
 
-VlqIstream::VlqIstream(std::istream &i) : istream(i) {}
+VlqIstream::VlqIstream(std::istream &i) : istream(i) { loadBuffer(); }
 
 VlqIstream &VlqIstream::operator>>(uint64_t &n) {
   n = {};
@@ -20,10 +20,15 @@ VlqIstream &VlqIstream::operator>>(uint64_t &n) {
 
 bool VlqIstream::readBit() {
   if (index == 64) {
-    istream.read(reinterpret_cast<char *>(&buffer), sizeof(buffer));
-    index = {};
+    loadBuffer();
   }
   return Bit::get(buffer, index++);
+}
+
+void VlqIstream::loadBuffer() {
+  buffer = {};
+  istream.read(reinterpret_cast<char *>(&buffer), sizeof(buffer));
+  index = {};
 }
 
 

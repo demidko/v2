@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Compressor {
+namespace NginxLog {
 
   void compress(const std::string &logFilename);
 }
