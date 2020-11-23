@@ -11,6 +11,9 @@ struct VlqOstream {
   VlqOstream &operator<<(uint64_t);
 
 private:
+
+  void writeOctetFrom(uint64_t, uint8_t&);
+
   void write(bool);
 
   void flush();

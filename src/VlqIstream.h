@@ -10,6 +10,8 @@ struct VlqIstream {
 
 private:
 
+  void readOctetTo(uint64_t &, uint8_t &);
+
   bool readBit();
 
   void loadBuffer();

@@ -8,21 +8,18 @@ VlqIstream &VlqIstream::operator>>(uint64_t &number) {
   number = {};
   uint8_t i = 0;
   for (bool flag = readBit(); flag; flag = readBit()) {
-    for (uint8_t j = 0; j < 7; ++j, ++i) {
-      auto b = readBit();
-      if (b) {
-        Bit::set(number, i);
-      }
-    }
+    readOctetTo(number, i);
   }
+  readOctetTo(number, i);
+  return *this;
+}
+
+void VlqIstream::readOctetTo(uint64_t &number, uint8_t &i) {
   for (uint8_t j = 0; j < 7; ++j, ++i) {
-    auto b = readBit();
-    if (b) {
+    if (readBit()) {
       Bit::set(number, i);
     }
   }
-  std::cout << '\n';
-  return *this;
 }
 
 bool VlqIstream::readBit() {
@@ -31,12 +28,9 @@ bool VlqIstream::readBit() {
       loadBuffer();
       return readBit();
     }
-    std::cout << 0;
     return 0;
   }
-  auto r = Bit::get(buffer, index++);
-  std::cout << r;
-  return r;
+  return Bit::get(buffer, index++);
 }
 
 void VlqIstream::loadBuffer() {
