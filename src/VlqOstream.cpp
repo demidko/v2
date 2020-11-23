@@ -1,47 +1,30 @@
-#include "VlqOstream.h"
+#include <VlqOstream.h>
 #include <Bit.h>
-#include <iostream>
+#include <vector>
+
+static std::vector<char> split(uint64_t number) {
+  std::vector<char> res;
+  uint8_t width = std::bit_width(number);
+  uint8_t octets = double(width) / 7;
+
+  for (uint8_t i = 0, ni{}, buf{}; i < octets; buf = {}, ++i) {
+    for (uint8_t bi = 1; bi < 8; ++bi, ++ni) {
+      if (ni < 64 && Bit::get(number, ni)) Bit::set(buf, bi);
+    }
+    res.push_back(buf);
+  }
+  Bit::set(res.back(), 0);
+  return res;
+}
 
 VlqOstream::VlqOstream(std::ostream &o) : ostream(o) {}
 
-VlqOstream::~VlqOstream() { flush(); }
 
 VlqOstream &VlqOstream::operator<<(uint64_t number) {
-  uint8_t i = 0;
-  auto bitWidth = std::bit_width(number);
-  if (bitWidth <= 7) {
-    write(0);
-    writeOctetFrom(number, i);
-    return *this;
-  }
-  for (; i < bitWidth;) {
-    write((bitWidth - i) > 7);
-    writeOctetFrom(number, i);
+  for (auto b: split(number)) {
+    ostream.write(&b, 1);
   }
   return *this;
 }
 
-void VlqOstream::writeOctetFrom(uint64_t number, uint8_t &i) {
-  for (uint8_t limit = i + 7; i < limit; ++i) {
-    if (Bit::get(number, i)) {
-      write(1);
-    }
-  }
-}
 
-void VlqOstream::write(bool bit) {
-  std::cout << bit;
-  if (index == 64) {
-    flush();
-  }
-  if (bit) {
-    Bit::set(buffer, index);
-  }
-  ++index;
-}
-
-void VlqOstream::flush() {
-  ostream.write(reinterpret_cast<char *>(&buffer), sizeof(buffer));
-  buffer = {};
-  index = {};
-}

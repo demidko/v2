@@ -1,13 +1,12 @@
-#include "NginxLog.h"
+#include <NginxLog.h>
 #include <unordered_map>
 #include <map>
 #include <fstream>
-#include <sstream>
-#include <iostream>
-#include <bitset>
-#include <bit>
 #include <filesystem>
 #include <iterator>
+#include <VlqOstream.h>
+#include <list>
+#include <sstream>
 
 std::istringstream &parse(const std::string &text) {
   static std::istringstream lineParser;
@@ -58,38 +57,33 @@ buildTerms(const std::string &logFilename, const std::string &urlsBuffer) {
   return termsMap;
 }
 
+
 void NginxLog::compress(const std::string &logFilename) {
   auto orderedTermsBuffer = logFilename + ".v2.terms";
   auto termsMap = buildTerms(logFilename, orderedTermsBuffer);
-  std::ofstream compressedUrls(logFilename + ".v2", std::ios::binary);
+  std::ofstream v2compressed(logFilename + ".v2", std::ios::binary);
   auto mapLen = termsMap.size();
-  std::cout << mapLen << " unique terms found\n";
-  compressedUrls.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
-
-
-  char empty; // поскольку стандарт ничего не говорит о \0 в конце char*, страхуемся
-  std::bitset<8> bitset(5);
-
-  for (auto &&[term, id]: termsMap) {
-    compressedUrls.write(&empty, 1);
-
-    compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
-
-    compressedUrls.write(&empty, 1);
-    compressedUrls.write(term.data(), termsMap.size());
-
+  v2compressed.write(reinterpret_cast<char *>(&mapLen), sizeof(mapLen));
+  char empty = ' ';
+  v2compressed.write(&empty, 1);
+  for (auto &&[k, _]: termsMap) {
+    v2compressed.write(k.data(), k.size());
+    v2compressed.write(&empty, 1);
   }
-
-  compressedUrls.write(&empty, 1);
+  VlqOstream vlqEncoder(v2compressed);
+  for (auto &&[_, v]: termsMap) {
+    vlqEncoder << v;
+  }
   std::ifstream orderedTermsStream(orderedTermsBuffer);
   for (std::string buf; std::getline(orderedTermsStream, buf);) {
+    std::list<uint64_t> url;
     for (auto &terms = parse(buf); std::getline(terms, buf, ' ');) {
-      auto id = termsMap[buf];
-      compressedUrls.write(reinterpret_cast<char *>(&id), sizeof(id));
+      url.push_back(termsMap[buf]);
+    }
+    vlqEncoder << url.size();
+    for (auto &&word: url) {
+      vlqEncoder << word;
     }
   }
-
-  orderedTermsStream.close(); // здесь не полагаемся на автоматический вызов деструктора т к нам еще удалять нужно
   std::filesystem::remove(orderedTermsBuffer);
-
 }

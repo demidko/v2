@@ -37,4 +37,4 @@
 Название этой сущности должно совпадать с именем файла.  
 
 ##### Логи для эксперимента: 
-`vault.bazadev.net:/data/logs/logs/nginx-frontend/`
+`logs@vault.bazadev.net:/data/logs/logs/nginx-frontend/baza.farpost.ru.log-2019-12-26.xz`
