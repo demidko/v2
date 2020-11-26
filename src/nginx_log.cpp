@@ -71,9 +71,6 @@ namespace {
       for (auto &&[_, term]: frequency_map) {
         terms_to_ids[term] = --identifier;
       }
-      termed_urls.close();
-      std::ifstream a;
-      std::ifstream b(std::move(a));
     }
 
     virtual ~preprocessed_log() {
