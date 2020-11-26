@@ -5,17 +5,17 @@
 #include <cstdint>
 #include <istream>
 
-namespace vlq {
+namespace vlq { // заоптимизированные перегрузки для работы с потоками
+
   using basic_type = uint32_t;
 
   enum class number : basic_type;
 
   template<typename T>
-  constexpr inline number &as_vlq(T &&n) { return reinterpret_cast<vlq::number &>(n); }
-
+  constexpr inline number from(T &&n) { return static_cast<vlq::number>(n); }
 
   template<typename T = basic_type>
-  constexpr inline T &from_vlq(number &n) { return reinterpret_cast<T &>(n); }
+  constexpr inline T to_uint(number n) { return static_cast<T>(n); }
 
   std::ostream &operator<<(std::ostream &, number);
 

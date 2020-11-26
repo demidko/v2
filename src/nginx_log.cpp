@@ -88,20 +88,25 @@ void nginx_log::compress(const std::string &log_filename) {
     compressed_stream << term << ' ';
   }
   for (auto &&[_, id]: log.terms_to_ids) {
-    compressed_stream << vlq::as_vlq(id);
+    compressed_stream << vlq::from(id);
   }
   for (std::string line; std::getline(preprocessed_stream, line);) {
     auto terms = split(line);
-    compressed_stream << vlq::as_vlq(terms.size());
+    compressed_stream << vlq::from(terms.size());
     for (auto &&term: terms) {
-      compressed_stream << vlq::as_vlq(log.terms_to_ids[term]);
+      compressed_stream << vlq::from(log.terms_to_ids[term]);
     }
   }
 }
 
 void nginx_log::decompress(const std::string &v2_filename) {
   std::ifstream vlq_binary_stream(v2_filename, std::ios::binary);
-  std::list<std::string> term;
-  std::size_t terms_to_ids_size;
-  vlq_binary_stream.read(reinterpret_cast<char *>(&terms_to_ids_size), sizeof(terms_to_ids_size));
+  std::list<std::string> terms;
+  uint32_t terms_to_ids_size;
+  vlq_binary_stream >> terms_to_ids_size;
+  std::string key_buf;
+  for (uint32_t i = 0; i < terms_to_ids_size; ++i) {
+    vlq_binary_stream >> key_buf;
+    terms.push_back(key_buf);
+  }
 }

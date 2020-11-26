@@ -22,27 +22,24 @@ TEST_CASE("Bit operations should works correctly") {
 TEST_CASE("Standard operators '>>' and '<<' should works correctly with binary IO") {
   {
     std::ofstream bin_out("test", std::ios::binary);
-    bin_out << 47502317ull << "some text and more" << vlq::as_vlq(4) << vlq::as_vlq(475);
+    bin_out << 47502317u << "some text and more" << vlq::from(4) << vlq::from(475);
   }
-
   std::ifstream bin_in("test", std::ios::binary);
   uint64_t len;
   vlq::number vlq1, vlq2;
   std::string some, text, and_, more;
   bin_in >> len >> some >> text >> and_ >> more >> vlq1 >> vlq2;
   std::filesystem::remove("test");
-
-  REQUIRE(len == 47502317ull);
+  REQUIRE(len == 47502317u);
   REQUIRE(some == "some");
   REQUIRE(text == "text");
   REQUIRE(and_ == "and");
   REQUIRE(more == "more");
-  REQUIRE(vlq::from_vlq<uint64_t>(vlq1) == 4);
-  REQUIRE(vlq::from_vlq<uint64_t>(vlq2) == 475);
+  REQUIRE(vlq::to_uint(vlq1) == 4);
+  REQUIRE(vlq::to_uint(vlq2) == 475);
 }
 
-TEST_CASE("Vlq compression should works correctly") {
-
+TEST_CASE("Vlq compression should works correctly in 0..4'294'967'295 range") {
 
   constexpr auto test_list_size = 10'000'000;
 
@@ -63,17 +60,16 @@ TEST_CASE("Vlq compression should works correctly") {
   {
     std::ofstream bin_out("test", std::ios::binary);
     for (auto &&x: expected_list) {
-      bin_out << vlq::as_vlq(x);
+      bin_out << vlq::from(x);
     }
   }
-
 
   std::ifstream bin_in("test", std::ios::binary);
   std::list<uint32_t> actual_list;
   vlq::number buf;
   for (auto i = 0; i < test_list_size; ++i) {
     bin_in >> buf;
-    actual_list.push_back(vlq::from_vlq(buf));
+    actual_list.push_back(vlq::to_uint(buf));
   }
   std::filesystem::remove("test");
 
