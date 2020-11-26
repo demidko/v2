@@ -5,3 +5,4 @@ cmake-build-release
 *.v2
 *.terms
 *.bin
+*.urls

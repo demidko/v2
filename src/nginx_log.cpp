@@ -33,13 +33,15 @@ namespace {
 
   struct preprocessed_log {
 
-    const std::string terms_filename;
+    const std::filesystem::path terms_path;
     std::unordered_map<std::string, uint32_t> terms_to_ids;
 
-    explicit preprocessed_log(const std::string &log_filename) : terms_filename(log_filename + ".terms") {
+    explicit preprocessed_log(const std::string &log_filename) : terms_path(
+      std::filesystem::path(log_filename).replace_extension(".terms")
+    ) {
       std::ifstream log(log_filename);
       // В один проход по потоку логов заполняем файл термированными url
-      std::ofstream termed_urls(terms_filename);
+      std::ofstream termed_urls(terms_path);
       // И генерируем словарь термов с частотой
       for (std::string buf; std::getline(log, buf);) {
         auto request = extract(buf, 23);
@@ -82,8 +84,11 @@ namespace {
 
 void nginx_log::compress(const std::string &log_filename) {
   preprocessed_log log(log_filename);
-  std::ifstream preprocessed_stream(log.terms_filename);
-  std::ofstream compressed_stream(log_filename + ".v2", std::ios::binary);
+  std::ifstream preprocessed_stream(log.terms_path);
+  std::ofstream compressed_stream(
+    std::filesystem::path(log_filename).replace_extension(".v2"),
+    std::ios::binary
+  );
   compressed_stream << log.terms_to_ids.size();
   for (auto &&[term, _]: log.terms_to_ids) {
     compressed_stream << ' ' << term;
@@ -100,31 +105,39 @@ void nginx_log::compress(const std::string &log_filename) {
   }
 }
 
-#include <iostream>
-
 void nginx_log::decompress(const std::string &v2_filename) {
 
-  std::ifstream vlq_binary_stream(v2_filename, std::ios::binary);
+  std::ifstream vlq_compressed_stream(v2_filename, std::ios::binary);
 
-  uint32_t terms_to_ids_size;
-  vlq_binary_stream >> terms_to_ids_size;
+  uint32_t ids_to_terms_size;
+  vlq_compressed_stream >> ids_to_terms_size;
 
-  std::vector<std::string> ordered_terms(terms_to_ids_size);
+  std::vector<std::string> ordered_terms(ids_to_terms_size);
   for (auto &term: ordered_terms) {
-    vlq_binary_stream >> term;
+    vlq_compressed_stream >> term;
   }
 
-  std::vector<vlq::number> ordered_ids(terms_to_ids_size);
+  std::vector<vlq::number> ordered_ids(ids_to_terms_size);
   for (auto &id: ordered_ids) {
-    vlq_binary_stream >> id;
+    vlq_compressed_stream >> id;
   }
 
-  std::unordered_map<std::string, uint32_t> terms_to_ids(terms_to_ids_size);
-  for (uint32_t i = 0; i < terms_to_ids_size; ++i) {
-    terms_to_ids.emplace(std::move(ordered_terms[i]), vlq::to_uint(ordered_ids[i]));
+  std::unordered_map<uint32_t, std::string> ids_to_terms(ids_to_terms_size);
+  for (uint32_t i = 0; i < ids_to_terms_size; ++i) {
+    ids_to_terms.emplace(vlq::to_uint(ordered_ids[i]), std::move(ordered_terms[i]));
   }
 
-  for (auto &&[k, v]: terms_to_ids) {
-    std::cout << k << ' ' << v;
+  auto decompressed_path = std::filesystem::path(v2_filename).replace_extension(".urls");
+  std::ofstream decompressed_stream(decompressed_path);
+  vlq::number url_words_count, id_buf;
+
+  while (vlq_compressed_stream) {
+
+    vlq_compressed_stream >> url_words_count;
+    for (uint32_t i = 0; i < vlq::to_uint(url_words_count); ++i) {
+      vlq_compressed_stream >> id_buf;
+      decompressed_stream << ids_to_terms[vlq::to_uint(id_buf)] << ' ';
+    }
+    decompressed_stream << '\n';
   }
 }
