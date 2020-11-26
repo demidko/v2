@@ -21,15 +21,15 @@ TEST_CASE("Bit operations should works correctly") {
 
 TEST_CASE("Standard operators '>>' and '<<' should works correctly with binary IO") {
   {
-    std::ofstream bin_out("test", std::ios::binary);
-    bin_out << 47502317u << "some text and more" << vlq::from(4) << vlq::from(475);
+    std::ofstream bin_out("test.bin", std::ios::binary);
+    bin_out << 47502317u << " some text and more" << vlq::from(4) << vlq::from(475);
   }
-  std::ifstream bin_in("test", std::ios::binary);
+  std::ifstream bin_in("test.bin", std::ios::binary);
   uint64_t len;
   vlq::number vlq1, vlq2;
   std::string some, text, and_, more;
   bin_in >> len >> some >> text >> and_ >> more >> vlq1 >> vlq2;
-  std::filesystem::remove("test");
+  std::filesystem::remove("test.bin");
   REQUIRE(len == 47502317u);
   REQUIRE(some == "some");
   REQUIRE(text == "text");
@@ -41,6 +41,8 @@ TEST_CASE("Standard operators '>>' and '<<' should works correctly with binary I
 
 TEST_CASE("Vlq compression should works correctly in 0..4'294'967'295 range") {
 
+  // Сюда уходит основное время тестов:
+  // проверяем vlq на списке из 10 миллионов случайных чисел
   constexpr auto test_list_size = 10'000'000;
 
   auto generate_random_list = [] {
@@ -58,20 +60,20 @@ TEST_CASE("Vlq compression should works correctly in 0..4'294'967'295 range") {
 
   std::list<uint32_t> expected_list = generate_random_list();
   {
-    std::ofstream bin_out("test", std::ios::binary);
+    std::ofstream bin_out("test.bin", std::ios::binary);
     for (auto &&x: expected_list) {
       bin_out << vlq::from(x);
     }
   }
 
-  std::ifstream bin_in("test", std::ios::binary);
+  std::ifstream bin_in("test.bin", std::ios::binary);
   std::list<uint32_t> actual_list;
   vlq::number buf;
   for (auto i = 0; i < test_list_size; ++i) {
     bin_in >> buf;
     actual_list.push_back(vlq::to_uint(buf));
   }
-  std::filesystem::remove("test");
+  std::filesystem::remove("test.bin");
 
   REQUIRE(actual_list == expected_list);
 }

@@ -6,6 +6,7 @@
 #include <iterator>
 #include <vlq.h>
 #include <sstream>
+#include <vector>
 #include <list>
 
 namespace {
@@ -85,7 +86,7 @@ void nginx_log::compress(const std::string &log_filename) {
   std::ofstream compressed_stream(log_filename + ".v2", std::ios::binary);
   compressed_stream << log.terms_to_ids.size();
   for (auto &&[term, _]: log.terms_to_ids) {
-    compressed_stream << term << ' ';
+    compressed_stream << ' ' << term;
   }
   for (auto &&[_, id]: log.terms_to_ids) {
     compressed_stream << vlq::from(id);
@@ -99,14 +100,31 @@ void nginx_log::compress(const std::string &log_filename) {
   }
 }
 
+#include <iostream>
+
 void nginx_log::decompress(const std::string &v2_filename) {
+
   std::ifstream vlq_binary_stream(v2_filename, std::ios::binary);
-  std::list<std::string> terms;
+
   uint32_t terms_to_ids_size;
   vlq_binary_stream >> terms_to_ids_size;
-  std::string key_buf;
+
+  std::vector<std::string> ordered_terms(terms_to_ids_size);
+  for (auto &term: ordered_terms) {
+    vlq_binary_stream >> term;
+  }
+
+  std::vector<vlq::number> ordered_ids(terms_to_ids_size);
+  for (auto &id: ordered_ids) {
+    vlq_binary_stream >> id;
+  }
+
+  std::unordered_map<std::string, uint32_t> terms_to_ids(terms_to_ids_size);
   for (uint32_t i = 0; i < terms_to_ids_size; ++i) {
-    vlq_binary_stream >> key_buf;
-    terms.push_back(key_buf);
+    terms_to_ids.emplace(std::move(ordered_terms[i]), vlq::to_uint(ordered_ids[i]));
+  }
+
+  for (auto &&[k, v]: terms_to_ids) {
+    std::cout << k << ' ' << v;
   }
 }
