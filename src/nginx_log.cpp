@@ -22,19 +22,11 @@ namespace {
     return *std::next(std::istream_iterator<std::string>(parse(from_text)), word_at);
   }
 
-  std::list<std::string> split(const std::string &text) {
-    auto &line = parse(text);
-    std::list<std::string> result;
-    for (std::string word; std::getline(line, word, ' ');) {
-      result.push_back(word);
-    }
-    return result;
-  }
-
   struct preprocessed_log {
 
     const std::filesystem::path terms_path;
     std::unordered_map<std::string, uint32_t> terms_to_ids;
+    uint32_t lines_count = 0;
 
     explicit preprocessed_log(const std::string &log_filename) : terms_path(
       std::filesystem::path(log_filename).replace_extension(".terms")
@@ -60,6 +52,7 @@ namespace {
           }
         }
         termed_urls << '\n';
+        ++lines_count;
       }
       // Сортируем термы по возрастанию частоты
       std::multimap<uintmax_t, std::reference_wrapper<const std::basic_string<char>>> frequency_map;
@@ -73,9 +66,7 @@ namespace {
       }
     }
 
-    virtual ~preprocessed_log() {
-      // std::filesystem::remove(terms_filename);
-    }
+    virtual ~preprocessed_log() { std::filesystem::remove(terms_path); }
   };
 }
 
@@ -91,16 +82,18 @@ void nginx_log::compress(const std::string &log_filename) {
     compressed_stream << ' ' << term;
   }
   for (auto &&[_, id]: log.terms_to_ids) {
-    compressed_stream << vlq::from(id);
+    compressed_stream << vlq::wrap(id);
   }
-  for (std::string line; std::getline(preprocessed_stream, line);) {
-    auto terms = split(line);
-    compressed_stream << vlq::from(terms.size());
-    for (auto &&term: terms) {
-      compressed_stream << vlq::from(log.terms_to_ids[term]);
+  compressed_stream << vlq::wrap(log.lines_count);
+  for (std::string buf; std::getline(preprocessed_stream, buf);) {
+    for (auto &words = parse(buf); std::getline(words, buf, ' ');) {
+      compressed_stream << vlq::wrap(log.terms_to_ids[buf]);
     }
+    compressed_stream << vlq::wrap(0);
   }
 }
+
+#include <iostream>
 
 void nginx_log::decompress(const std::string &v2_filename) {
 
@@ -121,20 +114,20 @@ void nginx_log::decompress(const std::string &v2_filename) {
 
   std::unordered_map<uint32_t, std::string> ids_to_terms(ids_to_terms_size);
   for (uint32_t i = 0; i < ids_to_terms_size; ++i) {
-    ids_to_terms.emplace(vlq::to_uint(ordered_ids[i]), std::move(ordered_terms[i]));
+    ids_to_terms.emplace(vlq::unwrap(ordered_ids[i]), std::move(ordered_terms[i]));
   }
 
-  auto decompressed_path = std::filesystem::path(v2_filename).replace_extension(".urls");
-  std::ofstream decompressed_stream(decompressed_path);
-  vlq::number url_words_count, id_buf;
-
-  while (vlq_compressed_stream) {
-
-    vlq_compressed_stream >> url_words_count;
-    for (uint32_t i = 0; i < vlq::to_uint(url_words_count); ++i) {
-      vlq_compressed_stream >> id_buf;
-      decompressed_stream << ids_to_terms[vlq::to_uint(id_buf)] << ' ';
+  std::ofstream decompressed_stream(std::filesystem::path(v2_filename).replace_extension(".urls"));
+  vlq::number lines_count, buffer;
+  vlq_compressed_stream >> lines_count;
+  std::cout << "DETECTED LIMIT: " << vlq::unwrap(lines_count) << std::endl;
+  for (uint32_t i = 0, limit = vlq::unwrap(lines_count); i < limit; ++i) {
+    vlq_compressed_stream >> buffer;
+    if (auto id = vlq::unwrap(buffer); id) {
+      std::cout << "ID: " << id << std::endl;
+      decompressed_stream << ids_to_terms[id] << ' ';
+    } else {
+      decompressed_stream << '\n';
     }
-    decompressed_stream << '\n';
   }
 }

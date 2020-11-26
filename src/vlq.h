@@ -12,10 +12,10 @@ namespace vlq { // заоптимизированные перегрузки д�
   enum class number : basic_type;
 
   template<typename T>
-  constexpr inline number from(T &&n) { return static_cast<vlq::number>(n); }
+  constexpr inline number wrap(T &&n) { return static_cast<vlq::number>(n); }
 
   template<typename T = basic_type>
-  constexpr inline T to_uint(number n) { return static_cast<T>(n); }
+  constexpr inline T unwrap(number n) { return static_cast<T>(n); }
 
   std::ostream &operator<<(std::ostream &, number);
 
