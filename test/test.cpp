@@ -51,7 +51,7 @@ TEST_CASE("Vlq compression should works correctly in 0..4'294'967'295 range") {
       std::back_inserter(list),
       test_list_size,
       std::bind(
-        std::uniform_int_distribution<uint64_t>(0, UINT32_MAX),
+        std::uniform_int_distribution<uint32_t>(0, UINT32_MAX),
         std::mt19937{std::random_device{}()}
       )
     );
@@ -77,3 +77,8 @@ TEST_CASE("Vlq compression should works correctly in 0..4'294'967'295 range") {
 
   REQUIRE(actual_list == expected_list);
 }
+
+TEST_CASE("Complex utility test") {
+
+}
+
