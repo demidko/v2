@@ -17,10 +17,10 @@ target_link_libraries(v2 PRIVATE CLI11::CLI11)
 #[[Создаем тестовый проект]]
 project(test)
 #[[Подменяем для тестов точку входа]]
-list(FILTER sources EXCLUDE REGEX ".*Main.cpp$")
+list(FILTER sources EXCLUDE REGEX ".*main.cpp$")
 #[[Добавляем исходники тестов]]
-file(GLOB testSources test/*.cpp)
-add_executable(test ${sources} ${testSources})
+file(GLOB test_sources test/*.cpp)
+add_executable(test ${sources} ${test_sources})
 #[[Берём у vcpkg библиотеку для тестирования]]
 find_package(Catch2 CONFIG REQUIRED)
 target_link_libraries(test PRIVATE Catch2::Catch2)

@@ -1,7 +1,8 @@
-#pragma once
 /**
  * Самописная библиотека для работы с битами. Используется MSB-fisrt порядок.
  */
+#pragma once
+
 #include <bit>
 #include <cstdint>
 
@@ -34,7 +35,7 @@ namespace std {
 }
 #endif
 
-namespace Bit {
+namespace bit {
   /**
    * Читаем i-ый бит из n. Используется MSB-first порядок.
    */
