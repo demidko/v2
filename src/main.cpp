@@ -14,6 +14,8 @@ std::function<bool(const std::vector<std::string> &)> by(T &&handler) {
 
 int main(int argc, char **argv) {
 
+  std::ios_base::sync_with_stdio(false);
+
   CLI::App utility("Farpost access logs compressor/decompressor", "v2");
 
   utility.add_option(
