@@ -4,10 +4,17 @@
 #include <istream>
 #include <cstdint>
 
-namespace vlq { // заоптимизированные перегрузки для работы с потоками
+/**
+ * заоптимизированные перегрузки для работы с потоками
+ */
+namespace vlq {
 
   using basic_type = uint32_t;
 
+  /**
+   * свой алгебраический тип данных на основе uint32 чтобы добавить перегрузки потокового ввода и вывода,
+   * без конфликта с уже существующими операторами для uint32
+   */
   enum class number : basic_type;
 
   template<typename T>

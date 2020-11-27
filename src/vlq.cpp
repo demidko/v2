@@ -1,5 +1,5 @@
 #include <vlq.h>
-#include <bit.h>
+#include <bit.hpp>
 
 namespace vlq {
 
