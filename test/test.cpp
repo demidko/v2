@@ -23,13 +23,15 @@ TEST_CASE("Bit operations should works correctly") {
 TEST_CASE("Standard operators '>>' and '<<' should works correctly with binary IO") {
   {
     std::ofstream bin_out("test.bin", std::ios::binary);
-    bin_out << 47502317u << " some text and more" << vlq::wrap(4) << vlq::wrap(0) << vlq::wrap(475);
+    bin_out << 47502317u << " some text and more " << vlq::wrap(4) << vlq::wrap(0) << vlq::wrap(475);
   }
   std::ifstream bin_in("test.bin", std::ios::binary);
   uint64_t len;
   vlq::number vlq1, vlq2, vlq3;
   std::string some, text, and_, more;
-  bin_in >> len >> some >> text >> and_ >> more >> vlq1 >> vlq2 >> vlq3;
+  bin_in >> len >> some >> text >> and_ >> more;
+  bin_in.ignore();
+  bin_in >> vlq1 >> vlq2 >> vlq3;
   std::filesystem::remove("test.bin");
   REQUIRE(len == 47502317u);
   REQUIRE(some == "some");

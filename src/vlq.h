@@ -3,7 +3,6 @@
 #include <ostream>
 #include <istream>
 #include <cstdint>
-#include <istream>
 
 namespace vlq { // заоптимизированные перегрузки для работы с потоками
 
