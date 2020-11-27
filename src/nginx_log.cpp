@@ -66,7 +66,7 @@ namespace {
       }
     }
 
-    virtual ~preprocessed_log() { /*std::filesystem::remove(terms_path);*/ }
+    virtual ~preprocessed_log() { std::filesystem::remove(terms_path); }
   };
 }
 
