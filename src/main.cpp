@@ -14,6 +14,10 @@ std::function<bool(const std::vector<std::string> &)> by(T &&handler) {
 
 int main(int argc, char **argv) {
 
+  /**
+   * TODO: провести эксперимент с ручной установкой буфферизации: https://en.cppreference.com/w/cpp/io/basic_filebuf/setbuf
+   */
+
   std::ios_base::sync_with_stdio(false);
 
   CLI::App utility("Farpost access logs compressor/decompressor", "v2");
