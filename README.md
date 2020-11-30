@@ -22,7 +22,8 @@ Access-логи занимают очень много места (~30гб/фа�
 1. Устанавливаем зависимость для парсинга аргументов командной строки:  
 `vcpkg install cli11`
 1. Подготавливаем проект для сборки с использованием зависимостей `vcpkg`:  
-```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```
+```cmake `vcpkg integrate install | tail -1 |  cut -d \" -f2` -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -B cmake-build-release```  
+На Windows вместо кода в кавычках, вручную подставьте параметр полученный вызовом `vcpkg integrate install`.
 1. Собираем проект и тесты:  
 `cmake --build cmake-build-release --target all`  
 После этого в директории `cmake-build-release` основная self-executable утилита появится под именем `v2`.  
